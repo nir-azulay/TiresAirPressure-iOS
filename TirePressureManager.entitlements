@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- CarPlay Entitlements -->
+    <key>com.apple.developer.carplay-audio</key>
+    <true/>
+    <key>com.apple.developer.carplay-communication</key>
+    <true/>
+    <key>com.apple.developer.carplay-charging</key>
+    <false/>
+    <key>com.apple.developer.carplay-driving-task</key>
+    <false/>
+    <key>com.apple.developer.carplay-fueling</key>
+    <false/>
+    <key>com.apple.developer.carplay-navigation</key>
+    <false/>
+    <key>com.apple.developer.carplay-parking</key>
+    <false/>
+    <key>com.apple.developer.carplay-quick-ordering</key>
+    <false/>
+
+    <!-- Background Modes -->
+    <key>com.apple.developer.bluetooth-central</key>
+    <true/>
+
+    <!-- App Groups (if needed for data sharing) -->
+    <key>com.apple.security.application-groups</key>
+    <array>
+        <string>group.com.nazulay.tirepressuremanager</string>
+    </array>
+
+    <!-- Keychain Sharing (if needed for secure data) -->
+    <key>keychain-access-groups</key>
+    <array>
+        <string>$(AppIdentifierPrefix)com.nazulay.tirepressuremanager</string>
+    </array>
+</dict>
+</plist>

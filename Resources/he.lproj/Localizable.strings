@@ -1,0 +1,192 @@
+/*
+  Localizable.strings (Hebrew)
+  TirePressureManager
+*/
+
+/* General */
+"settings" = "הגדרות";
+"back" = "חזור";
+"close" = "סגור";
+"ok" = "אישור";
+"message" = "הודעה";
+"start" = "התחל";
+"stop" = "עצור";
+"scan_devices" = "חפש מכשירים";
+"stop_scan" = "עצור חיפוש";
+"scanning" = "מחפש...";
+"available_devices" = "מכשירים זמינים";
+"not_connected" = "לא מחובר למכשיר";
+"connected" = "מחובר";
+"disconnected" = "מנותק";
+"connecting" = "מתחבר...";
+"app_version" = "גרסת האפליקציה";
+"version_number" = "1.0.0";
+
+/* Pressure */
+"target_pressure" = "לחץ יעד";
+"pressure_format" = "%.1f PSI";
+"pressure_unit" = "PSI";
+"pressure_reached" = "הגיע ללחץ היעד";
+"increase_pressure" = "הגדל לחץ";
+"decrease_pressure" = "הקטן לחץ";
+"pressure_difference" = "הפרש לחץ:";
+
+/* Permissions */
+"permissions_required" = "נדרשות הרשאות";
+"permissions_explanation" = "האפליקציה זקוקה להרשאות Bluetooth ומיקום כדי לחפש ולהתחבר למכשירים. אנא אשר את כל ההרשאות הנדרשות.";
+"bluetooth_permissions_explanation" = "אפליקציה זו זקוקה להרשאות Bluetooth ומיקום כדי למצוא ולהתחבר למכשיר TPMS שלך.";
+"permissions_required_for_scanning" = "ללא הרשאות אלה, האפליקציה לא יכולה לגלות או לתקשר עם מכשירי Bluetooth.";
+"grant_permissions" = "מתן הרשאות";
+"not_now" = "לא עכשיו";
+"open_settings" = "פתח הגדרות";
+"open_settings_permission_explanation" = "האפליקציה זקוקה להרשאות Bluetooth ומיקום כדי לחפש ולהתחבר למכשירים. אנא הפעל את כל ההרשאות הנדרשות בהגדרות.";
+"bluetooth_required" = "נדרש Bluetooth";
+"bluetooth_required_explanation" = "אפליקציה זו דורשת הפעלת Bluetooth. אנא הפעל את ה-Bluetooth כדי להמשיך.";
+
+/* Operation Modes */
+"mode_inflating" = "מנפח...";
+"mode_deflating" = "מוציא אוויר...";
+
+/* Descriptions */
+"app_logo" = "לוגו האפליקציה";
+"settings_icon" = "הגדרות";
+
+/* Settings */
+"app_settings" = "הגדרות האפליקציה";
+"device_settings" = "הגדרות המכשיר";
+
+/* New strings moved from code */
+"search_devices" = "חפש מכשירים";
+"available_devices_count" = "מכשירים זמינים (%d)";
+"no_devices_found_message" = "לא נמצאו מכשירים.\nלחץ על כפתור החיפוש כדי לחפש מכשירים.";
+"scan_devices_hint" = "לחץ על 'חפש מכשירים' כדי לחפש.";
+"unknown_device" = "מכשיר לא ידוע";
+"unknown_device_with_id" = "מכשיר לא ידוע (%1$s)";
+"signal_strength_format" = "עוצמת אות: %1$d dBm";
+"current_pressure" = "לחץ נוכחי";
+"decrease" = "הקטן";
+"increase" = "הגדל";
+"preset_pressures" = "לחצים קבועים";
+"about" = "אודות";
+"exit_app" = "צא מהאפליקציה";
+"back_button" = "חזור";
+"disconnect_device" = "נתק מכשיר";
+"developed_by" = "פותח על ידי";
+"developer_name" = "ניר עזולאי";
+"developer_email" = "nir.azulay@gmail.com";
+"version_format" = "גרסה 1.2.0";
+"target_reached_title" = "הגיע ללחץ היעד";
+"target_reached_message" = "הגיע בהצלחה ללחץ היעד!";
+"target_value" = "יעד: %1$.1f PSI";
+"current_value" = "נוכחי: %1$.1f PSI";
+
+/* Settings Screen */
+"device_settings_title" = "הגדרות המכשיר";
+"device_name" = "שם המכשיר";
+"wifi_settings" = "הגדרות WiFi";
+"scan_networks" = "סרוק רשתות";
+"exit_without_save" = "צא בלי לשמור?";
+"changes_not_saved" = "השינויים שלך לא יישמרו.";
+"exit_without_saving" = "צא בלי לשמור";
+"continue_editing" = "המשך עריכה";
+"discard" = "בטל שינויים";
+"saving_settings" = "שומר הגדרות...";
+"device_will_reset" = "המכשיר יתאפס ויתחבר מחדש אוטומטית";
+"reconnecting_automatically" = "מתחבר מחדש אוטומטית...";
+"returning_to_main_in_seconds" = "חוזר למסך הראשי בעוד %d שניות...";
+"unsaved_changes_message" = "יש לך שינויים לא שמורים שחייבים להישמר כדי להחיל על המכשיר.";
+"connection_status" = "סטטוס חיבור: %s";
+"try_reconnect" = "נסה להתחבר מחדש";
+"hardware_settings" = "הגדרות חומרה";
+"calibration_settings" = "הגדרות כיול";
+"simulation_mode" = "מצב סימולציה";
+"enable_simulation_mode" = "הפעל מצב סימולציה";
+"simulation_mode_description" = "מצב סימולציה מאפשר בדיקת האפליקציה ללא חיבור למכשיר אמיתי";
+"save_settings" = "שמור הגדרות";
+"wifi_password" = "סיסמה";
+"relay_compressor_pin" = "פין ממסר מדחס";
+"relay_free_pin" = "פין ממסר חופשי";
+"sensor_pin" = "פין חיישן";
+"sensor_value_at_0_psi" = "ערך חיישן ב-0 PSI";
+"sensor_value_at_50_psi" = "ערך חיישן ב-50 PSI";
+"precision_psi" = "דיוק (PSI)";
+"max_sec_for_status" = "זמן מקסימלי לסטטוס (שניות)";
+"measure_wait" = "זמן המתנה למדידה (שניות)";
+"auto_start" = "התחלה אוטומטית";
+"bt_pin_code" = "קוד PIN בלוטוס";
+"ssid" = "SSID";
+"password" = "סיסמה";
+
+/* Additional General Strings */
+"scanning_for_devices" = "מחפש מכשירים...";
+"tap_to_connect" = "לחץ להתחברות";
+"tire_pressure" = "לחץ אוויר בצמיגים";
+
+/* About Screen */
+"about_screen_title" = "אודות";
+"app_description" = "אפליקציית ניהול לחץ אוויר בצמיגים";
+"contact_info" = "מידע יצירת קשר";
+"copyright_notice" = "© %1$s 2024. כל הזכויות שמורות.";
+"connection_duration_seconds" = "מחובר במשך %d שניות";
+"connection_duration_minutes" = "מחובר במשך %d דקות ו-%d שניות";
+"connection_duration_hours" = "מחובר במשך %d שעות ו-%d דקות";
+"permission_denied" = "נדרשת הרשאה";
+
+/* CarPlay / Android Auto */
+"auto_current_pressure" = "לחץ נוכחי:";
+"auto_target_pressure" = "לחץ יעד:";
+"auto_select_target" = "בחר לחץ יעד";
+"auto_app_title" = "ניהול לחץ אוויר בצמיגים";
+"inflate" = "התחל ניפוח";
+"select_target_pressure" = "בחר לחץ יעד";
+"connect" = "התחבר";
+"auto_pressure_format" = "%.1f PSI";
+
+/* Mobile App Specific */
+"psi_unit" = "PSI";
+"plus_symbol" = "+";
+"minus_symbol" = "-";
+"connected_duration_seconds" = "מחובר במשך %1$d שניות";
+"connected_duration_minutes" = "מחובר במשך %1$d דקות ו-%2$d שניות";
+"connected_duration_hours" = "מחובר במשך %1$d שעות ו-%2$d דקות";
+"simple_pressure_format" = "%1$d PSI";
+
+/* Connection states */
+"bluetooth_disabled" = "בלוטוס מבוטל";
+"connection_error" = "שגיאת חיבור";
+
+/* Predefined Pressures */
+"preset_pressures_title" = "לחצים מוגדרים מראש";
+"add_pressure" = "הוסף לחץ";
+"remove_pressure" = "הסר";
+"add_pressure_button" = "הוסף לחץ";
+"remove_pressure_button" = "הסר לחץ";
+"preset_pressure_format" = "%d PSI";
+"request_settings" = "בקש הגדרות";
+
+/* Display Mode */
+"display_mode" = "מצב תצוגה";
+"system_default" = "ברירת מחדל של המערכת";
+"light_mode" = "מצב בהיר";
+"dark_mode" = "מצב כהה";
+"display_mode_change_notice" = "שינוי מצב התצוגה דורש הפעלה מחדש של האפליקציה";
+
+/* Language */
+"language" = "שפה";
+"language_change_notice" = "שינוי השפה יפעיל מחדש את האפליקציה";
+
+/* Signal Strength */
+"excellent_signal" = "אות מעולה";
+"good_signal" = "אות טוב";
+"fair_signal" = "אות בינוני";
+"weak_signal" = "אות חלש";
+"no_signal" = "אין אות";
+
+/* Pressure calculation methods */
+"pressure_calc_method" = "שיטת חישוב לחץ";
+"adc_calibration" = "כיול ADC (ברירת מחדל)";
+"voltage_calibration" = "כיול מתח";
+
+/* Debug Mode */
+"debug_mode" = "מצב דיבוג";
+"current_connection_state" = "מצב החיבור הנוכחי: %1$s";

@@ -1,0 +1,192 @@
+/*
+  Localizable.strings (English)
+  TirePressureManager
+*/
+
+/* General */
+"settings" = "Settings";
+"back" = "Back";
+"close" = "Close";
+"ok" = "OK";
+"message" = "Message";
+"start" = "Start";
+"stop" = "Stop";
+"scan_devices" = "Scan Devices";
+"stop_scan" = "Stop Scan";
+"scanning" = "Scanning...";
+"available_devices" = "Available Devices";
+"not_connected" = "Not Connected to Device";
+"connected" = "Connected";
+"disconnected" = "Disconnected";
+"connecting" = "Connecting...";
+"app_version" = "App Version";
+"version_number" = "1.0.0";
+
+/* Pressure */
+"target_pressure" = "Target Pressure";
+"pressure_format" = "%.1f PSI";
+"pressure_unit" = "PSI";
+"pressure_reached" = "Target Pressure Reached";
+"increase_pressure" = "Increase Pressure";
+"decrease_pressure" = "Decrease Pressure";
+"pressure_difference" = "Pressure Difference:";
+
+/* Permissions */
+"permissions_required" = "Permissions Required";
+"permissions_explanation" = "The app needs Bluetooth and Location permissions to scan for and connect to devices. Please allow all requested permissions.";
+"bluetooth_permissions_explanation" = "This app needs Bluetooth and location permissions to find and connect to your TPMS device.";
+"permissions_required_for_scanning" = "Without these permissions, the app cannot discover or communicate with Bluetooth devices.";
+"grant_permissions" = "Grant Permissions";
+"not_now" = "Not Now";
+"open_settings" = "Open Settings";
+"open_settings_permission_explanation" = "The app needs Bluetooth and Location permissions to scan for and connect to devices. Please enable all requested permissions in Settings.";
+"bluetooth_required" = "Bluetooth Required";
+"bluetooth_required_explanation" = "This app requires Bluetooth to be enabled. Please enable Bluetooth to continue.";
+
+/* Operation Modes */
+"mode_inflating" = "Inflating...";
+"mode_deflating" = "Deflating...";
+
+/* Descriptions */
+"app_logo" = "App Logo";
+"settings_icon" = "Settings";
+
+/* Settings */
+"app_settings" = "App Settings";
+"device_settings" = "Device Settings";
+
+/* New strings moved from code */
+"search_devices" = "Search Devices";
+"available_devices_count" = "Available Devices (%d)";
+"no_devices_found_message" = "No devices found.\nTap the scan button to search for devices.";
+"scan_devices_hint" = "Press 'Scan Devices' to search.";
+"unknown_device" = "Unknown Device";
+"unknown_device_with_id" = "Unknown Device (%1$s)";
+"signal_strength_format" = "Signal Strength: %1$d dBm";
+"current_pressure" = "Current Pressure";
+"decrease" = "Decrease";
+"increase" = "Increase";
+"preset_pressures" = "Preset Pressures";
+"about" = "About";
+"exit_app" = "Exit App";
+"back_button" = "Back";
+"disconnect_device" = "Disconnect Device";
+"developed_by" = "Developed by";
+"developer_name" = "Nir Azulay";
+"developer_email" = "nir.azulay@gmail.com";
+"version_format" = "Version 1.2.0";
+"target_reached_title" = "Target Pressure Reached";
+"target_reached_message" = "Target pressure successfully reached!";
+"target_value" = "Target: %1$.1f PSI";
+"current_value" = "Current: %1$.1f PSI";
+
+/* Settings Screen */
+"device_settings_title" = "Device Settings";
+"device_name" = "Device Name";
+"wifi_settings" = "WiFi Settings";
+"scan_networks" = "Scan Networks";
+"exit_without_save" = "Exit Without Saving?";
+"changes_not_saved" = "Your changes will not be saved.";
+"exit_without_saving" = "Exit Without Saving";
+"continue_editing" = "Continue Editing";
+"discard" = "Discard Changes";
+"saving_settings" = "Saving Settings...";
+"device_will_reset" = "Device will reset and reconnect automatically";
+"reconnecting_automatically" = "Reconnecting automatically...";
+"returning_to_main_in_seconds" = "Returning to main screen in %d seconds...";
+"unsaved_changes_message" = "You have unsaved changes that must be saved to apply to the device.";
+"connection_status" = "Connection Status: %s";
+"try_reconnect" = "Try Reconnect";
+"hardware_settings" = "Hardware Settings";
+"calibration_settings" = "Calibration Settings";
+"simulation_mode" = "Simulation Mode";
+"enable_simulation_mode" = "Enable Simulation Mode";
+"simulation_mode_description" = "Simulation mode allows testing the app without connecting to a real device";
+"save_settings" = "Save Settings";
+"wifi_password" = "Password";
+"relay_compressor_pin" = "Relay Compressor Pin";
+"relay_free_pin" = "Relay Free Pin";
+"sensor_pin" = "Sensor Pin";
+"sensor_value_at_0_psi" = "Sensor Value at 0 PSI";
+"sensor_value_at_50_psi" = "Sensor Value at 50 PSI";
+"precision_psi" = "Precision (PSI)";
+"max_sec_for_status" = "Max Time for Status (seconds)";
+"measure_wait" = "Measurement Wait Time (seconds)";
+"auto_start" = "Auto Start";
+"bt_pin_code" = "Bluetooth PIN Code";
+"ssid" = "SSID";
+"password" = "Password";
+
+/* Additional General Strings */
+"scanning_for_devices" = "Scanning for devices...";
+"tap_to_connect" = "Tap to connect";
+"tire_pressure" = "Tire Pressure";
+
+/* About Screen */
+"about_screen_title" = "About";
+"app_description" = "Tire Air Pressure Management App";
+"contact_info" = "Contact Information";
+"copyright_notice" = "© %1$s 2024. All rights reserved.";
+"connection_duration_seconds" = "Connected for %d seconds";
+"connection_duration_minutes" = "Connected for %d minutes and %d seconds";
+"connection_duration_hours" = "Connected for %d hours and %d minutes";
+"permission_denied" = "Permission Required";
+
+/* CarPlay / Android Auto */
+"auto_current_pressure" = "Current Pressure:";
+"auto_target_pressure" = "Target Pressure:";
+"auto_select_target" = "Select Target Pressure";
+"auto_app_title" = "Tire Air Pressure Management";
+"inflate" = "Start Inflation";
+"select_target_pressure" = "Select Target Pressure";
+"connect" = "Connect";
+"auto_pressure_format" = "%.1f PSI";
+
+/* Mobile App Specific */
+"psi_unit" = "PSI";
+"plus_symbol" = "+";
+"minus_symbol" = "-";
+"connected_duration_seconds" = "Connected for %1$d seconds";
+"connected_duration_minutes" = "Connected for %1$d minutes and %2$d seconds";
+"connected_duration_hours" = "Connected for %1$d hours and %2$d minutes";
+"simple_pressure_format" = "%1$d PSI";
+
+/* Connection states */
+"bluetooth_disabled" = "Bluetooth Disabled";
+"connection_error" = "Connection Error";
+
+/* Predefined Pressures */
+"preset_pressures_title" = "Preset Pressures";
+"add_pressure" = "Add Pressure";
+"remove_pressure" = "Remove";
+"add_pressure_button" = "Add Pressure";
+"remove_pressure_button" = "Remove Pressure";
+"preset_pressure_format" = "%d PSI";
+"request_settings" = "Request Settings";
+
+/* Display Mode */
+"display_mode" = "Display Mode";
+"system_default" = "System Default";
+"light_mode" = "Light Mode";
+"dark_mode" = "Dark Mode";
+"display_mode_change_notice" = "Changing display mode requires app restart";
+
+/* Language */
+"language" = "Language";
+"language_change_notice" = "Changing language will restart the app";
+
+/* Signal Strength */
+"excellent_signal" = "Excellent signal";
+"good_signal" = "Good signal";
+"fair_signal" = "Fair signal";
+"weak_signal" = "Weak signal";
+"no_signal" = "No signal";
+
+/* Pressure calculation methods */
+"pressure_calc_method" = "Pressure Calculation Method";
+"adc_calibration" = "ADC calibration (default)";
+"voltage_calibration" = "Voltage calibration";
+
+/* Debug Mode */
+"debug_mode" = "Debug Mode";
+"current_connection_state" = "Current connection state: %1$s";
