@@ -190,3 +190,16 @@
 /* Debug Mode */
 "debug_mode" = "מצב דיבוג";
 "current_connection_state" = "מצב החיבור הנוכחי: %1$s";
+
+/* Device Management */
+"device_management" = "ניהול מכשירים";
+"manage_paired_devices" = "נהל מכשירים מזווגים";
+"manage_paired_devices_description" = "נהל את מכשירי הבלוטוס השמורים שלך. האפליקציה תנסה להתחבר למכשירים לפי הסדר המוצג למטה.";
+"no_paired_devices" = "אין מכשירים מזווגים";
+"no_paired_devices_description" = "התחבר למכשיר תחילה כדי לשמור אותו לחיבור אוטומטי.";
+"delete_device" = "מחק מכשיר";
+"delete_device_confirmation" = "האם אתה בטוח שברצונך למחוק את \"%@\" מהמכשירים המזווגים שלך?";
+"cancel" = "ביטול";
+"delete" = "מחק";
+"move_up" = "הזז למעלה";
+"move_down" = "הזז למטה";

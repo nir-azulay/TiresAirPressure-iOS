@@ -74,7 +74,7 @@
 "developed_by" = "Developed by";
 "developer_name" = "Nir Azulay";
 "developer_email" = "nir.azulay@gmail.com";
-"version_format" = "Version 1.2.0";
+"version_format" = "Version 1.3.0";
 "target_reached_title" = "Target Pressure Reached";
 "target_reached_message" = "Target pressure successfully reached!";
 "target_value" = "Target: %1$.1f PSI";
@@ -190,3 +190,16 @@
 /* Debug Mode */
 "debug_mode" = "Debug Mode";
 "current_connection_state" = "Current connection state: %1$s";
+
+/* Device Management */
+"device_management" = "Device Management";
+"manage_paired_devices" = "Manage Paired Devices";
+"manage_paired_devices_description" = "Manage your saved Bluetooth devices. The app will try to connect to devices in the order shown below.";
+"no_paired_devices" = "No Paired Devices";
+"no_paired_devices_description" = "Connect to a device first to save it for automatic reconnection.";
+"delete_device" = "Delete Device";
+"delete_device_confirmation" = "Are you sure you want to delete \"%@\" from your paired devices?";
+"cancel" = "Cancel";
+"delete" = "Delete";
+"move_up" = "Move Up";
+"move_down" = "Move Down";

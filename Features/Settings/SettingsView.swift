@@ -38,6 +38,22 @@ struct SettingsView: View {
                     PresetPressuresSection()
                 }
 
+                // Device Management Section
+                Section(NSLocalizedString("device_management", comment: "Device Management")) {
+                    NavigationLink(destination: DeviceManagementView()) {
+                        HStack {
+                            Image(systemName: "externaldrive.connected.to.line.below")
+                                .foregroundColor(.blue)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(NSLocalizedString("manage_paired_devices", comment: "Manage Paired Devices"))
+                                Text(NSLocalizedString("manage_paired_devices_description", comment: "Manage paired devices description"))
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 // Device Settings Section (only when connected)
                 if bleManager.connectionState.isConnected {
                     Section(NSLocalizedString("device_settings", comment: "Device Settings")) {

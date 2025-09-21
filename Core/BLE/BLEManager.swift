@@ -235,6 +235,11 @@ extension BLEManager: CBCentralManagerDelegate {
         connectionState = .connected
         connectedDeviceName = peripheral.name ?? "Unknown Device"
 
+        // Save the device automatically when connected
+        if let connectedDevice = discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
+            saveDevice(connectedDevice)
+        }
+
         // Discover services
         peripheral.discoverServices([serviceUUID])
     }
@@ -306,5 +311,75 @@ extension BLEManager: CBPeripheralDelegate {
         if let error = error {
             print("Error writing to characteristic: \(error)")
         }
+    }
+}
+
+// MARK: - Device Management
+extension BLEManager {
+    /// Get list of saved devices
+    func getSavedDevices() -> [SavedDevice] {
+        return SavedDevice.load().sorted { $0.connectionPriority < $1.connectionPriority }
+    }
+
+    /// Save a device to the saved devices list
+    func saveDevice(_ device: BLEDevice) {
+        var savedDevices = SavedDevice.load()
+
+        // Check if device already exists
+        if !savedDevices.contains(where: { $0.address == device.address }) {
+            let savedDevice = SavedDevice(
+                name: device.name,
+                address: device.address,
+                connectionPriority: savedDevices.count
+            )
+            savedDevices.append(savedDevice)
+            SavedDevice.save(savedDevices)
+        }
+    }
+
+    /// Delete a device from the saved devices list
+    func deleteDevice(_ address: String) {
+        var savedDevices = SavedDevice.load()
+        savedDevices.removeAll { $0.address == address }
+
+        // Reorder priorities
+        for (index, var device) in savedDevices.enumerated() {
+            device.connectionPriority = index
+        }
+
+        SavedDevice.save(savedDevices)
+    }
+
+    /// Reorder devices with new priority order
+    func reorderDevices(_ addressOrder: [String]) {
+        var savedDevices = SavedDevice.load()
+
+        // Create a dictionary for quick lookup
+        var deviceDict = Dictionary(uniqueKeysWithValues: savedDevices.map { ($0.address, $0) })
+
+        // Reorder according to new order
+        var reorderedDevices: [SavedDevice] = []
+        for (index, address) in addressOrder.enumerated() {
+            if var device = deviceDict[address] {
+                device.connectionPriority = index
+                reorderedDevices.append(device)
+            }
+        }
+
+        SavedDevice.save(reorderedDevices)
+    }
+
+    /// Attempt to connect to saved devices in priority order
+    func connectToSavedDevices() {
+        let savedDevices = getSavedDevices()
+
+        guard !savedDevices.isEmpty else {
+            startScanning()
+            return
+        }
+
+        // Try to connect to devices in priority order
+        // For now, just start scanning - this can be enhanced to try specific devices
+        startScanning()
     }
 }
