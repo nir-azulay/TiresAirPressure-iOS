@@ -9,44 +9,53 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                // App Settings Section
                 Section(NSLocalizedString("app_settings", comment: "App Settings")) {
-                    // Display Mode
-                    Picker(NSLocalizedString("display_mode", comment: "Display Mode"), selection: $settingsManager.displayMode) {
+                    // Note: display mode is always dark to match Android
+                    Picker(NSLocalizedString("display_mode", comment: "Display Mode"),
+                           selection: $settingsManager.displayMode) {
                         ForEach(DisplayMode.allCases, id: \.self) { mode in
                             Text(mode.displayText).tag(mode)
                         }
                     }
 
-                    // Language
-                    Picker(NSLocalizedString("language", comment: "Language"), selection: $settingsManager.language) {
-                        ForEach(AppLanguage.allCases, id: \.self) { language in
-                            Text(language.displayText).tag(language)
+                    Picker(NSLocalizedString("language", comment: "Language"),
+                           selection: $settingsManager.language) {
+                        ForEach(AppLanguage.allCases, id: \.self) { lang in
+                            Text(lang.displayText).tag(lang)
                         }
                     }
 
-                    // Debug Mode Toggle
-                    Toggle(NSLocalizedString("debug_mode", comment: "Debug Mode"), isOn: $settingsManager.debugMode)
+                    Toggle(NSLocalizedString("debug_mode", comment: "Debug Mode"),
+                           isOn: Binding(
+                            get: { settingsManager.debugMode },
+                            set: { newValue in
+                                settingsManager.updateDebugMode(newValue)
+                                bleManager.sendDebugMode(enabled: newValue)
+                            }
+                           ))
 
-                    // Simulation Mode Toggle
-                    Toggle(NSLocalizedString("simulation_mode", comment: "Simulation Mode"), isOn: $settingsManager.simulationMode)
-                        .help(NSLocalizedString("simulation_mode_description", comment: "Simulation mode description"))
+                    Toggle(NSLocalizedString("simulation_mode", comment: "Simulation Mode"),
+                           isOn: Binding(
+                            get: { settingsManager.simulationMode },
+                            set: { newValue in
+                                settingsManager.updateSimulationMode(newValue)
+                                bleManager.sendSimulationMode(enabled: newValue)
+                            }
+                           ))
                 }
 
-                // Preset Pressures Section
                 Section(NSLocalizedString("preset_pressures_title", comment: "Preset Pressures")) {
                     PresetPressuresSection()
                 }
 
-                // Device Management Section
                 Section(NSLocalizedString("device_management", comment: "Device Management")) {
                     NavigationLink(destination: DeviceManagementView()) {
                         HStack {
                             Image(systemName: "externaldrive.connected.to.line.below")
-                                .foregroundColor(.blue)
+                                .foregroundColor(AppColors.primary)
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(NSLocalizedString("manage_paired_devices", comment: "Manage Paired Devices"))
-                                Text(NSLocalizedString("manage_paired_devices_description", comment: "Manage paired devices description"))
+                                Text(NSLocalizedString("manage_paired_devices_description", comment: "Description"))
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
@@ -54,13 +63,12 @@ struct SettingsView: View {
                     }
                 }
 
-                // Device Settings Section (only when connected)
                 if bleManager.connectionState.isConnected {
                     Section(NSLocalizedString("device_settings", comment: "Device Settings")) {
                         Button(action: { showingDeviceSettings = true }) {
                             HStack {
                                 Image(systemName: "gearshape.2")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(AppColors.primary)
                                 Text("Configure Device Settings")
                                 Spacer()
                                 Image(systemName: "chevron.right")
@@ -72,7 +80,7 @@ struct SettingsView: View {
                         Button(action: { bleManager.requestSettings() }) {
                             HStack {
                                 Image(systemName: "arrow.clockwise")
-                                    .foregroundColor(.orange)
+                                    .foregroundColor(AppColors.connectingAmber)
                                 Text(NSLocalizedString("request_settings", comment: "Request Settings"))
                             }
                         }
@@ -80,7 +88,6 @@ struct SettingsView: View {
                     }
                 }
 
-                // Reset Section
                 Section {
                     Button(action: { showingResetAlert = true }) {
                         HStack {
@@ -115,9 +122,9 @@ struct PresetPressuresSection: View {
     @State private var showingAddPressure = false
 
     var body: some View {
-        ForEach(Array(settingsManager.presetPressures.enumerated()), id: \.offset) { index, pressure in
+        ForEach(Array(settingsManager.presetPressures.enumerated()), id: \.offset) { _, pressure in
             HStack {
-                Text(String(format: "%.1f PSI", pressure))
+                Text(String(format: "%.0f PSI", pressure))
                 Spacer()
 
                 if settingsManager.canRemovePresetPressure {
@@ -138,30 +145,23 @@ struct PresetPressuresSection: View {
                 }
             }
             .alert("Add Preset Pressure", isPresented: $showingAddPressure) {
-                TextField("Pressure (10-80 PSI)", text: $newPressure)
+                TextField("Pressure (1-80 PSI)", text: $newPressure)
                     .keyboardType(.decimalPad)
-                Button("Cancel", role: .cancel) {
-                    newPressure = ""
-                }
-                Button("Add") {
-                    addNewPressure()
-                }
+                Button("Cancel", role: .cancel) { newPressure = "" }
+                Button("Add") { addNewPressure() }
             } message: {
-                Text("Enter a pressure value between 10 and 80 PSI")
+                Text("Enter a pressure value between 1 and 80 PSI")
             }
         }
 
-        Text("Pressure Count: \(settingsManager.presetPressures.count)/8")
+        Text("Presets: \(settingsManager.presetPressures.count)/\(settingsManager.maxPressureCount)")
             .font(.caption)
             .foregroundColor(.secondary)
     }
 
     private func addNewPressure() {
         guard let pressure = Double(newPressure),
-              pressure >= 10.0 && pressure <= 80.0 else {
-            return
-        }
-
+              pressure >= 1.0 && pressure <= 80.0 else { return }
         settingsManager.addPresetPressure(pressure)
         newPressure = ""
     }
@@ -170,8 +170,24 @@ struct PresetPressuresSection: View {
 // MARK: - Device Settings View
 struct DeviceSettingsView: View {
     @EnvironmentObject var bleManager: BLEManager
+    @EnvironmentObject var settingsManager: SettingsManager
     @Environment(\.dismiss) private var dismiss
-    @State private var settings = DeviceSettings()
+
+    @State private var deviceName: String = ""
+    @State private var wifiSsid: String = ""
+    @State private var wifiPassword: String = ""
+    @State private var relayCompressorPin: Int = 0
+    @State private var relayFreePin: Int = 0
+    @State private var sensorPin: Int = 0
+    @State private var maxSecForStatus: Int = 30
+    @State private var sensorValueAt0PSI: String = "0.228"
+    @State private var sensorValueAt50PSI: String = "2.853"
+    @State private var measureWait: String = "2.0"
+    @State private var precision: String = "1.0"
+    @State private var btPinCode: String = "1234"
+    @State private var simulationMode: Bool = false
+    @State private var pressureCalcMethod: Int = 1
+
     @State private var hasUnsavedChanges = false
     @State private var showingExitAlert = false
     @State private var isSaving = false
@@ -179,60 +195,86 @@ struct DeviceSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(NSLocalizedString("device_settings_title", comment: "Device Settings")) {
-                    TextField(NSLocalizedString("device_name", comment: "Device Name"), text: $settings.deviceName)
-                        .onChange(of: settings.deviceName) { _ in hasUnsavedChanges = true }
+                Section("General") {
+                    TextField("Device Name", text: $deviceName)
+                        .onChange(of: deviceName) { _ in hasUnsavedChanges = true }
 
-                    Toggle(NSLocalizedString("auto_start", comment: "Auto Start"), isOn: $settings.autoStart)
-                        .onChange(of: settings.autoStart) { _ in hasUnsavedChanges = true }
+                    TextField("BT Pin Code", text: $btPinCode)
+                        .onChange(of: btPinCode) { _ in hasUnsavedChanges = true }
                 }
 
-                Section(NSLocalizedString("hardware_settings", comment: "Hardware Settings")) {
-                    Stepper(value: $settings.hardwareSettings.relayCompressorPin, in: 1...40) {
-                        Text("Compressor Pin: \(settings.hardwareSettings.relayCompressorPin)")
-                    }
-                    .onChange(of: settings.hardwareSettings.relayCompressorPin) { _ in hasUnsavedChanges = true }
+                Section("WiFi") {
+                    TextField("WiFi SSID", text: $wifiSsid)
+                        .onChange(of: wifiSsid) { _ in hasUnsavedChanges = true }
 
-                    Stepper(value: $settings.hardwareSettings.relayFreePin, in: 1...40) {
-                        Text("Free Pin: \(settings.hardwareSettings.relayFreePin)")
-                    }
-                    .onChange(of: settings.hardwareSettings.relayFreePin) { _ in hasUnsavedChanges = true }
-
-                    Stepper(value: $settings.hardwareSettings.sensorPin, in: 1...40) {
-                        Text("Sensor Pin: \(settings.hardwareSettings.sensorPin)")
-                    }
-                    .onChange(of: settings.hardwareSettings.sensorPin) { _ in hasUnsavedChanges = true }
+                    SecureField("WiFi Password", text: $wifiPassword)
+                        .onChange(of: wifiPassword) { _ in hasUnsavedChanges = true }
                 }
 
-                Section(NSLocalizedString("calibration_settings", comment: "Calibration Settings")) {
-                    VStack(alignment: .leading) {
-                        Text("Sensor Value at 0 PSI: \(String(format: "%.3f", settings.calibrationSettings.sensorValueAt0PSI))")
-                        Slider(value: $settings.calibrationSettings.sensorValueAt0PSI, in: 0.0...5.0, step: 0.001)
-                            .onChange(of: settings.calibrationSettings.sensorValueAt0PSI) { _ in hasUnsavedChanges = true }
+                Section("Hardware Pins") {
+                    Stepper("Compressor Pin: \(relayCompressorPin)", value: $relayCompressorPin, in: 0...40)
+                        .onChange(of: relayCompressorPin) { _ in hasUnsavedChanges = true }
+
+                    Stepper("Free Pin: \(relayFreePin)", value: $relayFreePin, in: 0...40)
+                        .onChange(of: relayFreePin) { _ in hasUnsavedChanges = true }
+
+                    Stepper("Sensor Pin: \(sensorPin)", value: $sensorPin, in: 0...40)
+                        .onChange(of: sensorPin) { _ in hasUnsavedChanges = true }
+                }
+
+                Section("Calibration") {
+                    HStack {
+                        Text("Sensor at 0 PSI:")
+                        Spacer()
+                        TextField("0.228", text: $sensorValueAt0PSI)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                            .onChange(of: sensorValueAt0PSI) { _ in hasUnsavedChanges = true }
                     }
 
-                    VStack(alignment: .leading) {
-                        Text("Sensor Value at 50 PSI: \(String(format: "%.3f", settings.calibrationSettings.sensorValueAt50PSI))")
-                        Slider(value: $settings.calibrationSettings.sensorValueAt50PSI, in: 0.0...5.0, step: 0.001)
-                            .onChange(of: settings.calibrationSettings.sensorValueAt50PSI) { _ in hasUnsavedChanges = true }
+                    HStack {
+                        Text("Sensor at 50 PSI:")
+                        Spacer()
+                        TextField("2.853", text: $sensorValueAt50PSI)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                            .onChange(of: sensorValueAt50PSI) { _ in hasUnsavedChanges = true }
                     }
 
-                    Picker(NSLocalizedString("pressure_calc_method", comment: "Pressure Calc Method"), selection: $settings.calibrationSettings.pressureCalcMethod) {
-                        ForEach(PressureCalcMethod.allCases, id: \.self) { method in
-                            Text(method.displayText).tag(method)
+                    Picker("Calc Method", selection: $pressureCalcMethod) {
+                        ForEach(PressureCalcMethod.allCases, id: \.rawValue) { method in
+                            Text(method.displayText).tag(method.rawValue)
                         }
                     }
-                    .onChange(of: settings.calibrationSettings.pressureCalcMethod) { _ in hasUnsavedChanges = true }
+                    .onChange(of: pressureCalcMethod) { _ in hasUnsavedChanges = true }
 
-                    Stepper(value: $settings.calibrationSettings.maxSecForStatus, in: 5...120) {
-                        Text("Max Status Time: \(settings.calibrationSettings.maxSecForStatus)s")
+                    HStack {
+                        Text("Precision:")
+                        Spacer()
+                        TextField("1.0", text: $precision)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 80)
+                            .onChange(of: precision) { _ in hasUnsavedChanges = true }
                     }
-                    .onChange(of: settings.calibrationSettings.maxSecForStatus) { _ in hasUnsavedChanges = true }
 
-                    Stepper(value: $settings.calibrationSettings.measureWaitTime, in: 1...10) {
-                        Text("Measure Wait: \(settings.calibrationSettings.measureWaitTime)s")
+                    Stepper("Max Status Time: \(maxSecForStatus)s", value: $maxSecForStatus, in: 5...120)
+                        .onChange(of: maxSecForStatus) { _ in hasUnsavedChanges = true }
+
+                    HStack {
+                        Text("Measure Wait:")
+                        Spacer()
+                        TextField("2.0", text: $measureWait)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 80)
+                            .onChange(of: measureWait) { _ in hasUnsavedChanges = true }
                     }
-                    .onChange(of: settings.calibrationSettings.measureWaitTime) { _ in hasUnsavedChanges = true }
+
+                    Toggle("Simulation Mode", isOn: $simulationMode)
+                        .onChange(of: simulationMode) { _ in hasUnsavedChanges = true }
                 }
             }
             .navigationTitle("Device Configuration")
@@ -249,19 +291,15 @@ struct DeviceSettingsView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        saveSettings()
-                    }
-                    .disabled(isSaving)
+                    Button("Save") { saveSettings() }
+                        .disabled(isSaving)
                 }
             }
-            .alert(NSLocalizedString("exit_without_save", comment: "Exit Without Saving?"), isPresented: $showingExitAlert) {
+            .alert("Exit Without Saving?", isPresented: $showingExitAlert) {
                 Button("Cancel", role: .cancel) { }
-                Button(NSLocalizedString("discard", comment: "Discard"), role: .destructive) {
-                    dismiss()
-                }
+                Button("Discard", role: .destructive) { dismiss() }
             } message: {
-                Text(NSLocalizedString("unsaved_changes_message", comment: "Unsaved changes message"))
+                Text("You have unsaved changes that will be lost.")
             }
             .overlay {
                 if isSaving {
@@ -271,7 +309,7 @@ struct DeviceSettingsView: View {
                             VStack(spacing: 16) {
                                 ProgressView()
                                     .scaleEffect(1.5)
-                                Text(NSLocalizedString("saving_settings", comment: "Saving Settings"))
+                                Text("Saving & Restarting Device...")
                                     .font(.headline)
                                     .foregroundColor(.white)
                             }
@@ -282,24 +320,58 @@ struct DeviceSettingsView: View {
                 }
             }
         }
-        .onAppear {
-            loadCurrentSettings()
-        }
+        .onAppear { loadCurrentSettings() }
     }
 
     private func loadCurrentSettings() {
-        if let currentSettings = bleManager.deviceSettings {
-            settings = currentSettings
-        }
+        guard let s = bleManager.deviceSettings else { return }
+        deviceName = s.deviceName
+        wifiSsid = s.wifiSsid
+        wifiPassword = s.wifiPassword
+        relayCompressorPin = s.relayCompressorPin
+        relayFreePin = s.relayFreePin
+        sensorPin = s.sensorPin
+        maxSecForStatus = s.maxSecForStatus
+        sensorValueAt0PSI = String(format: "%.3f", s.sensorValueAt0PSI)
+        sensorValueAt50PSI = String(format: "%.3f", s.sensorValueAt50PSI)
+        measureWait = String(format: "%.1f", s.measureWait)
+        precision = String(format: "%.1f", s.precision)
+        btPinCode = s.btPinCode
+        simulationMode = s.simulationMode
+        pressureCalcMethod = s.pressureCalcMethod
         hasUnsavedChanges = false
     }
 
     private func saveSettings() {
         isSaving = true
+
+        var settings = DeviceSettings()
+        settings.deviceName = deviceName
+        settings.wifiSsid = wifiSsid
+        settings.wifiPassword = wifiPassword
+        settings.relayCompressorPin = relayCompressorPin
+        settings.relayFreePin = relayFreePin
+        settings.sensorPin = sensorPin
+        settings.maxSecForStatus = maxSecForStatus
+        settings.sensorValueAt0PSI = Double(sensorValueAt0PSI) ?? 0.228
+        settings.sensorValueAt50PSI = Double(sensorValueAt50PSI) ?? 2.853
+        settings.measureWait = Double(measureWait) ?? 2.0
+        settings.precision = Double(precision) ?? 1.0
+        settings.btPinCode = btPinCode
+        settings.simulationMode = simulationMode
+        settings.pressureCalcMethod = pressureCalcMethod
+
         bleManager.updateSettings(settings)
 
-        // Simulate save delay
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            bleManager.forceReconnect()
+
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+
+            let debugEnabled = settingsManager.debugMode
+            bleManager.sendDebugMode(enabled: debugEnabled)
+
             isSaving = false
             hasUnsavedChanges = false
             dismiss()

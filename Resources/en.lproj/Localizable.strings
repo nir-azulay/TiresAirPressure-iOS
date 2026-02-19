@@ -203,3 +203,4 @@
 "delete" = "Delete";
 "move_up" = "Move Up";
 "move_down" = "Move Down";
+"start_pressure" = "Set Pressure";

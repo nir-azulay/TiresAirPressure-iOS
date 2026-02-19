@@ -1,66 +1,102 @@
 import Foundation
 
-/// Represents commands that can be sent to the tire pressure device via BLE
-enum BLECommand: String, CaseIterable {
-    case startInflation = "START_INFLATION"
-    case startDeflation = "START_DEFLATION"
-    case stopOperation = "STOP_OPERATION"
-    case getStatus = "GET_STATUS"
-    case getSettings = "GET_SETTINGS"
-    case setSettings = "SET_SETTINGS"
-    case calibrate = "CALIBRATE"
-    case reset = "RESET"
+struct BLEConstants {
+    static let serviceUUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+    static let notifyCharacteristicUUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+    static let commandCharacteristicUUID = "e3223119-9445-4e96-a4a1-85358c4046a2"
+    static let clientConfigDescriptorUUID = "00002902-0000-1000-8000-00805f9b34fb"
 
-    /// Convert command to JSON data for transmission
-    func toJSONData(parameters: [String: Any] = [:]) -> Data? {
-        var commandDict: [String: Any] = [
-            "command": self.rawValue,
-            "timestamp": ISO8601DateFormatter().string(from: Date())
-        ]
+    static let mtuSize = 517
+    static let scanTimeout: TimeInterval = 10.0
+    static let connectionTimeout: TimeInterval = 10.0
 
-        // Add parameters if provided
-        for (key, value) in parameters {
-            commandDict[key] = value
-        }
-
-        return try? JSONSerialization.data(withJSONObject: commandDict, options: [])
-    }
-
-    /// Create inflation command with target pressure
-    static func inflateToTarget(_ pressure: Double) -> Data? {
-        return BLECommand.startInflation.toJSONData(parameters: ["targetPressure": pressure])
-    }
-
-    /// Create deflation command with target pressure
-    static func deflateToTarget(_ pressure: Double) -> Data? {
-        return BLECommand.startDeflation.toJSONData(parameters: ["targetPressure": pressure])
-    }
-
-    /// Create settings update command
-    static func updateSettings(_ settings: DeviceSettings) -> Data? {
-        do {
-            let settingsData = try JSONEncoder().encode(settings)
-            let settingsDict = try JSONSerialization.jsonObject(with: settingsData, options: [])
-            return BLECommand.setSettings.toJSONData(parameters: ["settings": settingsDict])
-        } catch {
-            return nil
-        }
-    }
+    static let modeStop = 1
+    static let modeInflate = 2
+    static let modeDeflate = 3
+    static let modeSettings = 4
 }
 
-/// Constants for BLE service and characteristic UUIDs
-struct BLEConstants {
-    // Service UUID - matches Android app
-    static let serviceUUID = "12345678-1234-1234-1234-123456789abc"
+enum BLECommand {
+    case stop
+    case startTargetPressure(targetPressure: Double)
+    case updateSettings(DeviceSettings)
+    case simulationMode(enabled: Bool)
+    case requestSettings
+    case requestStatus
+    case debugMode(enabled: Bool)
 
-    // Characteristic UUIDs
-    static let commandCharacteristicUUID = "87654321-4321-4321-4321-210987654321"
-    static let notifyCharacteristicUUID = "11223344-5566-7788-99aa-bbccddeeff00"
+    static let cmdStop = 1
+    static let cmdStart = 2
+    static let cmdUpdateSettings = 3
+    static let cmdSimulationMode = 4
+    static let cmdLogLevel = 5
+    static let cmdGetSettings = 6
+    static let cmdRequestStatus = 7
 
-    // Device name filter
-    static let deviceNamePrefix = "TirePressure"
+    func toJSONData() -> Data? {
+        var dict: [String: Any]
 
-    // Connection timeouts
-    static let connectionTimeout: TimeInterval = 10.0
-    static let scanTimeout: TimeInterval = 30.0
+        switch self {
+        case .stop:
+            dict = [
+                "command": BLECommand.cmdStop,
+                "type": "command"
+            ]
+
+        case .startTargetPressure(let targetPressure):
+            dict = [
+                "command": BLECommand.cmdStart,
+                "targetPressure": targetPressure,
+                "type": "command"
+            ]
+
+        case .updateSettings(let settings):
+            dict = [
+                "command": BLECommand.cmdUpdateSettings,
+                "DeviceName": settings.deviceName,
+                "wifissid": settings.wifiSsid,
+                "wifipassword": settings.wifiPassword,
+                "RelayCompressorPin": settings.relayCompressorPin,
+                "RelayFreePin": settings.relayFreePin,
+                "SensorPin": settings.sensorPin,
+                "MaxSecForStatus": settings.maxSecForStatus,
+                "SensorValueAt0PSI": Double(String(format: "%.3f", settings.sensorValueAt0PSI))!,
+                "SensorValueAt50PSI": Double(String(format: "%.3f", settings.sensorValueAt50PSI))!,
+                "MessureWait": settings.measureWait,
+                "Precision": settings.precision,
+                "BTPinCode": settings.btPinCode,
+                "SimulationMode": settings.simulationMode,
+                "PressureCalcMethod": settings.pressureCalcMethod,
+                "type": "settings"
+            ]
+
+        case .simulationMode(let enabled):
+            dict = [
+                "command": BLECommand.cmdSimulationMode,
+                "enabled": enabled,
+                "type": "command"
+            ]
+
+        case .requestSettings:
+            dict = [
+                "command": BLECommand.cmdGetSettings,
+                "type": "command"
+            ]
+
+        case .requestStatus:
+            dict = [
+                "command": BLECommand.cmdRequestStatus,
+                "type": "command"
+            ]
+
+        case .debugMode(let enabled):
+            dict = [
+                "command": 7,
+                "enabled": enabled,
+                "type": "command"
+            ]
+        }
+
+        return try? JSONSerialization.data(withJSONObject: dict, options: [])
+    }
 }

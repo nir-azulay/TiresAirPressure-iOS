@@ -5,48 +5,168 @@ struct AboutView: View {
     @State private var connectionDuration: TimeInterval = 0
     @State private var timer: Timer?
 
-    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-    private let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-    private let appName = Bundle.main.infoDictionary?["CFBundleDisplayName"] as? String ?? "Tire Pressure Manager"
-
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 32) {
-                    // App Icon and Title
-                    AppHeaderSection()
+            ZStack {
+                AppColors.background.ignoresSafeArea()
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // App Header Card
+                        VStack(spacing: 16) {
+                            RoundedRectangle(cornerRadius: 60)
+                                .fill(LinearGradient(
+                                    colors: [AppColors.primary, AppColors.tertiary],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ))
+                                .frame(width: 120, height: 120)
+                                .overlay {
+                                    Image(systemName: "gauge")
+                                        .font(.system(size: 48))
+                                        .foregroundColor(.white)
+                                }
 
-                    // Version Information
-                    VersionInfoCard()
+                            Text("Tire Pressure Manager")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
 
-                    // Developer Information
-                    DeveloperInfoCard()
+                            Text(NSLocalizedString("app_description", comment: ""))
+                                .font(.system(size: 16))
+                                .foregroundColor(.white.opacity(0.7))
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity)
+                        .background(AppColors.cardBackground)
+                        .cornerRadius(12)
 
-                    // Connection Information
-                    if bleManager.connectionState.isConnected {
-                        ConnectionInfoCard(duration: connectionDuration)
+                        // Version Info Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Version")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+
+                            Text("\(AppConstants.currentVersion) (\(AppConstants.currentBuild))")
+                                .font(.system(size: 16))
+                                .foregroundColor(.white.opacity(0.7))
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppColors.cardBackground)
+                        .cornerRadius(12)
+
+                        // Contact Info Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(NSLocalizedString("contact_info", comment: ""))
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+
+                            HStack(spacing: 8) {
+                                Image(systemName: "person.fill")
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .frame(width: 24)
+                                Text(AppConstants.developerName)
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.white.opacity(0.7))
+                            }
+
+                            HStack(spacing: 8) {
+                                Image(systemName: "envelope.fill")
+                                    .foregroundColor(.white.opacity(0.7))
+                                    .frame(width: 24)
+                                Button(AppConstants.developerEmail) {
+                                    if let url = URL(string: "mailto:\(AppConstants.developerEmail)") {
+                                        UIApplication.shared.open(url)
+                                    }
+                                }
+                                .font(.system(size: 16))
+                                .foregroundColor(AppColors.primaryLight)
+                            }
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppColors.cardBackground)
+                        .cornerRadius(12)
+
+                        // Connection Info Card
+                        if bleManager.connectionState.isConnected {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Connection")
+                                    .font(.system(size: 18, weight: .bold))
+                                    .foregroundColor(.white)
+
+                                InfoRowDark(title: "Status", value: "Connected")
+                                InfoRowDark(title: "Duration", value: formattedDuration)
+                                InfoRowDark(title: "Protocol", value: "Bluetooth Low Energy")
+                            }
+                            .padding(16)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(AppColors.cardBackground)
+                            .cornerRadius(12)
+                        }
+
+                        // System Info Card
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("System")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundColor(.white)
+
+                            InfoRowDark(title: "iOS", value: UIDevice.current.systemVersion)
+                            InfoRowDark(title: "Model", value: UIDevice.current.model)
+                            if let bundleId = Bundle.main.bundleIdentifier {
+                                InfoRowDark(title: "Bundle", value: bundleId)
+                            }
+                        }
+                        .padding(16)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(AppColors.cardBackground)
+                        .cornerRadius(12)
+
+                        // Copyright
+                        Text("2025 \(AppConstants.developerName). All rights reserved.")
+                            .font(.system(size: 12))
+                            .foregroundColor(.white.opacity(0.5))
+                            .padding(.vertical, 16)
+
+                        Spacer(minLength: 32)
                     }
-
-                    // System Information
-                    SystemInfoCard()
-
-                    Spacer(minLength: 32)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
                 }
-                .padding()
             }
             .navigationTitle(NSLocalizedString("about", comment: "About"))
-            .onAppear {
-                startConnectionTimer()
-            }
-            .onDisappear {
-                stopConnectionTimer()
-            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColors.primary, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .onAppear { startConnectionTimer() }
+            .onDisappear { stopConnectionTimer() }
+        }
+    }
+
+    private var formattedDuration: String {
+        let hours = Int(connectionDuration) / 3600
+        let minutes = (Int(connectionDuration) % 3600) / 60
+        let seconds = Int(connectionDuration) % 60
+
+        if hours > 0 {
+            return String(format: "%dh %dm", hours, minutes)
+        } else if minutes > 0 {
+            return String(format: "%dm %ds", minutes, seconds)
+        } else {
+            return String(format: "%ds", seconds)
         }
     }
 
     private func startConnectionTimer() {
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
-            updateConnectionDuration()
+            Task { @MainActor in
+                if bleManager.connectionState.isConnected {
+                    connectionDuration += 1
+                } else {
+                    connectionDuration = 0
+                }
+            }
         }
     }
 
@@ -54,157 +174,21 @@ struct AboutView: View {
         timer?.invalidate()
         timer = nil
     }
-
-    private func updateConnectionDuration() {
-        // This would need to track connection start time in BLEManager
-        // For now, we'll simulate it
-        if bleManager.connectionState.isConnected {
-            connectionDuration += 1
-        } else {
-            connectionDuration = 0
-        }
-    }
 }
 
-// MARK: - App Header Section
-struct AppHeaderSection: View {
-    var body: some View {
-        VStack(spacing: 16) {
-            // App Icon
-            RoundedRectangle(cornerRadius: 20)
-                .fill(LinearGradient(
-                    colors: [.blue, .purple],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ))
-                .frame(width: 100, height: 100)
-                .overlay {
-                    Image(systemName: "gauge")
-                        .font(.system(size: 48))
-                        .foregroundColor(.white)
-                }
-
-            VStack(spacing: 4) {
-                Text("Tire Pressure Manager")
-                    .font(.title2)
-                    .fontWeight(.bold)
-
-                Text(NSLocalizedString("app_description", comment: "App description"))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-    }
-}
-
-// MARK: - Version Info Card
-struct VersionInfoCard: View {
-    private let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.0"
-    private let buildNumber = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-
-    var body: some View {
-        GroupBox("Version Information") {
-            VStack(alignment: .leading, spacing: 12) {
-                InfoRow(title: "Version", value: appVersion)
-                InfoRow(title: "Build", value: buildNumber)
-                InfoRow(title: "Platform", value: "iOS")
-                InfoRow(title: "Architecture", value: "ARM64")
-            }
-        }
-    }
-}
-
-// MARK: - Developer Info Card
-struct DeveloperInfoCard: View {
-    var body: some View {
-        GroupBox(NSLocalizedString("contact_info", comment: "Contact Information")) {
-            VStack(alignment: .leading, spacing: 12) {
-                InfoRow(title: NSLocalizedString("developed_by", comment: "Developed by"),
-                       value: NSLocalizedString("developer_name", comment: "Nir Azulay"))
-
-                HStack {
-                    Text("Email:")
-                        .foregroundColor(.secondary)
-                        .frame(width: 80, alignment: .leading)
-                    Button(NSLocalizedString("developer_email", comment: "nir.azulay@gmail.com")) {
-                        if let url = URL(string: "mailto:nir.azulay@gmail.com") {
-                            UIApplication.shared.open(url)
-                        }
-                    }
-                    .foregroundColor(.blue)
-                    Spacer()
-                }
-
-                InfoRow(title: "Copyright",
-                       value: String(format: NSLocalizedString("copyright_notice", comment: "Copyright"), "Nir Azulay"))
-            }
-        }
-    }
-}
-
-// MARK: - Connection Info Card
-struct ConnectionInfoCard: View {
-    let duration: TimeInterval
-
-    var body: some View {
-        GroupBox("Connection Information") {
-            VStack(alignment: .leading, spacing: 12) {
-                InfoRow(title: "Status", value: "Connected")
-                InfoRow(title: "Duration", value: formattedDuration)
-                InfoRow(title: "Protocol", value: "Bluetooth Low Energy")
-                InfoRow(title: "Service", value: "Tire Pressure Monitoring")
-            }
-        }
-    }
-
-    private var formattedDuration: String {
-        let hours = Int(duration) / 3600
-        let minutes = (Int(duration) % 3600) / 60
-        let seconds = Int(duration) % 60
-
-        if hours > 0 {
-            return String(format: NSLocalizedString("connected_duration_hours", comment: "Connected duration hours"), hours, minutes)
-        } else if minutes > 0 {
-            return String(format: NSLocalizedString("connected_duration_minutes", comment: "Connected duration minutes"), minutes, seconds)
-        } else {
-            return String(format: NSLocalizedString("connected_duration_seconds", comment: "Connected duration seconds"), seconds)
-        }
-    }
-}
-
-// MARK: - System Info Card
-struct SystemInfoCard: View {
-    var body: some View {
-        GroupBox("System Information") {
-            VStack(alignment: .leading, spacing: 12) {
-                InfoRow(title: "iOS Version", value: UIDevice.current.systemVersion)
-                InfoRow(title: "Device Model", value: UIDevice.current.model)
-                InfoRow(title: "Device Name", value: UIDevice.current.name)
-
-                if let bundleId = Bundle.main.bundleIdentifier {
-                    InfoRow(title: "Bundle ID", value: bundleId)
-                }
-
-                InfoRow(title: "Min iOS", value: "15.0")
-                InfoRow(title: "Bluetooth", value: "BLE 5.0+")
-            }
-        }
-    }
-}
-
-// MARK: - Info Row Component
-struct InfoRow: View {
+struct InfoRowDark: View {
     let title: String
     let value: String
 
     var body: some View {
         HStack {
             Text(title + ":")
-                .foregroundColor(.secondary)
+                .font(.system(size: 14))
+                .foregroundColor(.white.opacity(0.5))
                 .frame(width: 80, alignment: .leading)
             Text(value)
-                .fontWeight(.medium)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.white.opacity(0.7))
             Spacer()
         }
     }

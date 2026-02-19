@@ -1,111 +1,86 @@
 import Foundation
 
-/// Represents the configuration settings for the tire pressure device
-struct DeviceSettings: Codable, Equatable {
-    let deviceName: String
-    let wifiSettings: WiFiSettings?
-    let hardwareSettings: HardwareSettings
-    let calibrationSettings: CalibrationSettings
-    let autoStart: Bool
-    let bluetoothPinCode: String?
+struct DeviceSettings: Equatable {
+    var operationMode: Int = 4
+    var deviceName: String = ""
+    var wifiSsid: String = ""
+    var wifiPassword: String = ""
+    var relayCompressorPin: Int = 0
+    var relayFreePin: Int = 0
+    var sensorPin: Int = 0
+    var maxSecForStatus: Int = 30
+    var sensorValueAt0PSI: Double = 0.228
+    var sensorValueAt50PSI: Double = 2.853
+    var measureWait: Double = 2.0
+    var precision: Double = 1.0
+    var btPinCode: String = "1234"
+    var currentPressure: Double = 0.0
+    var softwareVersion: String = ""
+    var ipAddress: String = ""
+    var simulationMode: Bool = false
+    var pressureCalcMethod: Int = 1
 
-    init(
-        deviceName: String = "TirePressureDevice",
-        wifiSettings: WiFiSettings? = nil,
-        hardwareSettings: HardwareSettings = HardwareSettings(),
-        calibrationSettings: CalibrationSettings = CalibrationSettings(),
-        autoStart: Bool = false,
-        bluetoothPinCode: String? = nil
-    ) {
-        self.deviceName = deviceName
-        self.wifiSettings = wifiSettings
-        self.hardwareSettings = hardwareSettings
-        self.calibrationSettings = calibrationSettings
-        self.autoStart = autoStart
-        self.bluetoothPinCode = bluetoothPinCode
+    static func from(json: [String: Any]) -> DeviceSettings {
+        var s = DeviceSettings()
+        s.operationMode = json["operationMode"] as? Int ?? 4
+        s.deviceName = stringValue(json["DeviceName"]) ?? ""
+        s.wifiSsid = stringValue(json["wifissid"]) ?? ""
+        s.wifiPassword = stringValue(json["wifipassword"]) ?? ""
+        s.relayCompressorPin = intValue(json["RelayCompressorPin"]) ?? 0
+        s.relayFreePin = intValue(json["RelayFreePin"]) ?? 0
+        s.sensorPin = intValue(json["SensorPin"]) ?? 0
+        s.maxSecForStatus = intValue(json["MaxSecForStatus"]) ?? 30
+        s.sensorValueAt0PSI = doubleValue(json["SensorValueAt0PSI"]) ?? 0.228
+        s.sensorValueAt50PSI = doubleValue(json["SensorValueAt50PSI"]) ?? 2.853
+        s.measureWait = doubleValue(json["MessureWait"]) ?? 2.0
+        s.precision = doubleValue(json["Precision"]) ?? 1.0
+        s.btPinCode = stringValue(json["BTPinCode"]) ?? "1234"
+        s.currentPressure = doubleValue(json["CurrentPressure"]) ?? 0.0
+        s.softwareVersion = stringValue(json["Software_VER"]) ?? ""
+        s.ipAddress = stringValue(json["IP"]) ?? ""
+        s.simulationMode = boolValue(json["SimulationMode"]) ?? false
+        s.pressureCalcMethod = intValue(json["PressureCalcMethod"]) ?? 1
+        return s
+    }
+
+    private static func stringValue(_ value: Any?) -> String? {
+        if let s = value as? String { return s }
+        if let n = value as? NSNumber { return n.stringValue }
+        return nil
+    }
+
+    private static func intValue(_ value: Any?) -> Int? {
+        if let n = value as? Int { return n }
+        if let n = value as? Double { return Int(n) }
+        if let s = value as? String { return Int(s) }
+        return nil
+    }
+
+    private static func doubleValue(_ value: Any?) -> Double? {
+        if let n = value as? Double { return n }
+        if let n = value as? Int { return Double(n) }
+        if let s = value as? String { return Double(s) }
+        return nil
+    }
+
+    private static func boolValue(_ value: Any?) -> Bool? {
+        if let b = value as? Bool { return b }
+        if let n = value as? Int { return n != 0 }
+        if let s = value as? String { return s.lowercased() == "true" || s == "1" }
+        return nil
     }
 }
 
-/// WiFi connection settings for the device
-struct WiFiSettings: Codable, Equatable {
-    let ssid: String
-    let password: String?
-    let signalStrength: Int?
-
-    init(ssid: String, password: String? = nil, signalStrength: Int? = nil) {
-        self.ssid = ssid
-        self.password = password
-        self.signalStrength = signalStrength
-    }
-}
-
-/// Hardware pin configuration settings
-struct HardwareSettings: Codable, Equatable {
-    let relayCompressorPin: Int
-    let relayFreePin: Int
-    let sensorPin: Int
-
-    init(
-        relayCompressorPin: Int = 2,
-        relayFreePin: Int = 3,
-        sensorPin: Int = 34
-    ) {
-        self.relayCompressorPin = relayCompressorPin
-        self.relayFreePin = relayFreePin
-        self.sensorPin = sensorPin
-    }
-}
-
-/// Pressure sensor calibration settings
-struct CalibrationSettings: Codable, Equatable {
-    let sensorValueAt0PSI: Double
-    let sensorValueAt50PSI: Double
-    let precisionPSI: Double
-    let maxSecForStatus: Int
-    let measureWaitTime: Int
-    let pressureCalcMethod: PressureCalcMethod
-
-    init(
-        sensorValueAt0PSI: Double = 0.5,
-        sensorValueAt50PSI: Double = 4.5,
-        precisionPSI: Double = 0.5,
-        maxSecForStatus: Int = 30,
-        measureWaitTime: Int = 2,
-        pressureCalcMethod: PressureCalcMethod = .adcCalibration
-    ) {
-        self.sensorValueAt0PSI = sensorValueAt0PSI
-        self.sensorValueAt50PSI = sensorValueAt50PSI
-        self.precisionPSI = precisionPSI
-        self.maxSecForStatus = maxSecForStatus
-        self.measureWaitTime = measureWaitTime
-        self.pressureCalcMethod = pressureCalcMethod
-    }
-}
-
-/// Method used for pressure calculation
-enum PressureCalcMethod: String, Codable, CaseIterable {
-    case adcCalibration = "adc_calibration"
-    case voltageCalibration = "voltage_calibration"
+enum PressureCalcMethod: Int, CaseIterable {
+    case adcCalibration = 1
+    case voltageCalibration = 2
 
     var displayText: String {
         switch self {
         case .adcCalibration:
-            return NSLocalizedString("adc_calibration", comment: "ADC calibration method")
+            return NSLocalizedString("adc_calibration", comment: "ADC Calibration")
         case .voltageCalibration:
-            return NSLocalizedString("voltage_calibration", comment: "Voltage calibration method")
+            return NSLocalizedString("voltage_calibration", comment: "Voltage Calibration")
         }
-    }
-}
-
-/// Response structure for device settings requests
-struct DeviceSettingsResponse: Codable, Equatable {
-    let settings: DeviceSettings
-    let status: String
-    let timestamp: Date
-
-    init(settings: DeviceSettings, status: String = "success", timestamp: Date = Date()) {
-        self.settings = settings
-        self.status = status
-        self.timestamp = timestamp
     }
 }

@@ -158,7 +158,7 @@ struct DeviceItemView: View {
                 Button(action: onMoveUp) {
                     Image(systemName: "chevron.up")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(canMoveUp ? .blue : .gray)
+                        .foregroundColor(canMoveUp ? AppColors.primary : .gray)
                 }
                 .disabled(!canMoveUp || isDeleting)
 
@@ -166,7 +166,7 @@ struct DeviceItemView: View {
                 Button(action: onMoveDown) {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(canMoveDown ? .blue : .gray)
+                        .foregroundColor(canMoveDown ? AppColors.primary : .gray)
                 }
                 .disabled(!canMoveDown || isDeleting)
 
@@ -174,7 +174,7 @@ struct DeviceItemView: View {
                 Button(action: onDelete) {
                     Image(systemName: "trash")
                         .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.red)
+                        .foregroundColor(AppColors.stopRed)
                 }
                 .disabled(isDeleting)
             }

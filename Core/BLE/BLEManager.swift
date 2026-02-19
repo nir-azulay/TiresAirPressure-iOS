@@ -2,7 +2,6 @@ import Foundation
 import CoreBluetooth
 import Combine
 
-/// Main BLE manager responsible for device discovery, connection, and communication
 @MainActor
 class BLEManager: NSObject, ObservableObject {
     // MARK: - Published Properties
@@ -13,9 +12,13 @@ class BLEManager: NSObject, ObservableObject {
     @Published var deviceSettings: DeviceSettings?
     @Published var isScanning: Bool = false
 
+    let targetReachedSubject = PassthroughSubject<(target: Double, current: Double), Never>()
+
+    // MARK: - Internal (for ConnectionView access)
+    private(set) var connectedPeripheral: CBPeripheral?
+
     // MARK: - Private Properties
     private var centralManager: CBCentralManager!
-    private var connectedPeripheral: CBPeripheral?
     private var commandCharacteristic: CBCharacteristic?
     private var notifyCharacteristic: CBCharacteristic?
 
@@ -27,15 +30,31 @@ class BLEManager: NSObject, ObservableObject {
     private let commandUUID = CBUUID(string: BLEConstants.commandCharacteristicUUID)
     private let notifyUUID = CBUUID(string: BLEConstants.notifyCharacteristicUUID)
 
+    private var messageBuffer = ""
+    private var writeQueue: [Data] = []
+    private var isWriting = false
+
+    private var settingsRequestAttempts = 0
+    private let maxSettingsRequestAttempts = 3
+    private var ignoreNextStatusUpdate = false
+
+    private var autoConnectTask: Task<Void, Never>?
+    private var debugSyncTask: Task<Void, Never>?
+
+    private var settingsManager: SettingsManager?
+
     // MARK: - Initialization
     override init() {
         super.init()
-        centralManager = CBCentralManager(delegate: self, queue: .main)
+        centralManager = CBCentralManager(delegate: self, queue: nil)
     }
 
-    // MARK: - Public Methods
+    func setSettingsManager(_ manager: SettingsManager) {
+        self.settingsManager = manager
+    }
 
-    /// Start scanning for BLE devices
+    // MARK: - Scanning
+
     func startScanning() {
         guard centralManager.state == .poweredOn else {
             connectionState = .bluetoothDisabled
@@ -46,19 +65,18 @@ class BLEManager: NSObject, ObservableObject {
         isScanning = true
         discoveredDevices.removeAll()
 
-        // Scan for devices with our service UUID
         centralManager.scanForPeripherals(
             withServices: [serviceUUID],
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: false]
         )
 
-        // Stop scanning after timeout
-        scanTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.scanTimeout, repeats: false) { _ in
-            self.stopScanning()
+        scanTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.scanTimeout, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.stopScanning()
+            }
         }
     }
 
-    /// Stop scanning for BLE devices
     func stopScanning() {
         centralManager.stopScan()
         isScanning = false
@@ -70,7 +88,8 @@ class BLEManager: NSObject, ObservableObject {
         }
     }
 
-    /// Connect to a specific BLE device
+    // MARK: - Connection
+
     func connect(to device: BLEDevice) {
         stopScanning()
         connectionState = .connecting
@@ -80,17 +99,38 @@ class BLEManager: NSObject, ObservableObject {
 
         centralManager.connect(device.peripheral, options: nil)
 
-        // Set connection timeout
-        connectionTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.connectionTimeout, repeats: false) { _ in
-            self.disconnect()
-            self.connectionState = .connectionError
+        connectionTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.connectionTimeout, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.handleConnectionTimeout()
+            }
         }
     }
 
-    /// Disconnect from the current device
+    func connectByIdentifier(_ identifier: UUID) {
+        let peripherals = centralManager.retrievePeripherals(withIdentifiers: [identifier])
+        guard let peripheral = peripherals.first else {
+            print("[BLEManager] No peripheral found for identifier: \(identifier)")
+            return
+        }
+
+        connectionState = .connecting
+        connectedPeripheral = peripheral
+        peripheral.delegate = self
+        connectionStartTime = Date()
+        centralManager.connect(peripheral, options: nil)
+
+        connectionTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.connectionTimeout, repeats: false) { [weak self] _ in
+            Task { @MainActor in
+                self?.handleConnectionTimeout()
+            }
+        }
+    }
+
     func disconnect() {
         connectionTimer?.invalidate()
         connectionTimer = nil
+        autoConnectTask?.cancel()
+        debugSyncTask?.cancel()
 
         if let peripheral = connectedPeripheral {
             centralManager.cancelPeripheralConnection(peripheral)
@@ -101,285 +141,477 @@ class BLEManager: NSObject, ObservableObject {
         notifyCharacteristic = nil
         connectedDeviceName = nil
         deviceStatus = nil
+        deviceSettings = nil
+        messageBuffer = ""
+        writeQueue.removeAll()
+        isWriting = false
+        settingsRequestAttempts = 0
         connectionState = .disconnected
     }
 
-    /// Send inflation command to the device
-    func startInflation(targetPressure: Double) {
-        guard let data = BLECommand.inflateToTarget(targetPressure) else { return }
-        sendCommand(data)
+    func forceReconnect() {
+        guard let peripheral = connectedPeripheral else { return }
+        let identifier = peripheral.identifier
+        disconnect()
+
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            self?.connectByIdentifier(identifier)
+        }
     }
 
-    /// Send deflation command to the device
-    func startDeflation(targetPressure: Double) {
-        guard let data = BLECommand.deflateToTarget(targetPressure) else { return }
-        sendCommand(data)
-    }
+    // MARK: - Commands
 
-    /// Stop current operation
-    func stopOperation() {
-        guard let data = BLECommand.stopOperation.toJSONData() else { return }
-        sendCommand(data)
-    }
-
-    /// Request device status
-    func requestStatus() {
-        guard let data = BLECommand.getStatus.toJSONData() else { return }
-        sendCommand(data)
-    }
-
-    /// Request device settings
-    func requestSettings() {
-        guard let data = BLECommand.getSettings.toJSONData() else { return }
-        sendCommand(data)
-    }
-
-    /// Update device settings
-    func updateSettings(_ settings: DeviceSettings) {
-        guard let data = BLECommand.updateSettings(settings) else { return }
-        sendCommand(data)
-    }
-
-    // MARK: - Private Methods
-
-    private func sendCommand(_ data: Data) {
-        guard let peripheral = connectedPeripheral,
-              let characteristic = commandCharacteristic,
-              connectionState == .connected else {
+    func sendCommand(_ command: BLECommand) {
+        guard connectionState == .connected,
+              let data = command.toJSONData() else {
+            print("[BLEManager] Cannot send command: not connected or serialization failed")
             return
         }
 
+        if case .startTargetPressure = command {
+            ignoreNextStatusUpdate = true
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(nanoseconds: 2_000_000_000)
+                self?.ignoreNextStatusUpdate = false
+            }
+        } else if case .stop = command {
+            ignoreNextStatusUpdate = false
+        }
+
+        print("[BLEManager] Queueing command: \(String(data: data, encoding: .utf8) ?? "")")
+        writeQueue.append(data)
+        processWriteQueue()
+    }
+
+    func startInflation(targetPressure: Double) {
+        sendCommand(.startTargetPressure(targetPressure: targetPressure))
+    }
+
+    func startDeflation(targetPressure: Double) {
+        sendCommand(.startTargetPressure(targetPressure: targetPressure))
+    }
+
+    func stopOperation() {
+        sendCommand(.stop)
+    }
+
+    func requestSettings() {
+        sendCommand(.requestSettings)
+    }
+
+    func requestStatus() {
+        sendCommand(.requestStatus)
+    }
+
+    func updateSettings(_ settings: DeviceSettings) {
+        sendCommand(.updateSettings(settings))
+    }
+
+    func sendDebugMode(enabled: Bool) {
+        sendCommand(.debugMode(enabled: enabled))
+    }
+
+    func sendSimulationMode(enabled: Bool) {
+        sendCommand(.simulationMode(enabled: enabled))
+    }
+
+    // MARK: - Auto-Connect
+
+    func connectToSavedDevices() {
+        let savedDevices = getSavedDevices()
+        guard !savedDevices.isEmpty else {
+            startScanning()
+            return
+        }
+
+        autoConnectTask?.cancel()
+        autoConnectTask = Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            for saved in savedDevices {
+                guard !Task.isCancelled else { return }
+                if let uuid = UUID(uuidString: saved.address) {
+                    for attempt in 1...3 {
+                        guard !Task.isCancelled else { return }
+                        print("[BLEManager] Auto-connect attempt \(attempt) to \(saved.name)")
+                        self.connectByIdentifier(uuid)
+                        try? await Task.sleep(nanoseconds: 5_000_000_000)
+                        if self.connectionState == .connected {
+                            return
+                        }
+                    }
+                }
+            }
+            if self.connectionState != .connected {
+                self.startScanning()
+            }
+        }
+    }
+
+    // MARK: - Write Queue
+
+    private func processWriteQueue() {
+        guard !isWriting, !writeQueue.isEmpty else { return }
+        guard let peripheral = connectedPeripheral,
+              let characteristic = commandCharacteristic else {
+            writeQueue.removeAll()
+            return
+        }
+
+        isWriting = true
+        let data = writeQueue.removeFirst()
         peripheral.writeValue(data, for: characteristic, type: .withResponse)
     }
 
+    // MARK: - Message Parsing
+
     private func handleReceivedData(_ data: Data) {
-        do {
-            let json = try JSONSerialization.jsonObject(with: data, options: [])
-            guard let dict = json as? [String: Any] else { return }
+        guard let chunk = String(data: data, encoding: .utf8) else { return }
 
-            // Handle different message types
-            if let statusDict = dict["status"] as? [String: Any] {
-                handleStatusUpdate(statusDict)
-            } else if let settingsDict = dict["settings"] as? [String: Any] {
-                handleSettingsUpdate(settingsDict)
+        messageBuffer += chunk
+
+        while let range = messageBuffer.range(of: "}") {
+            let jsonString = String(messageBuffer[messageBuffer.startIndex...range.lowerBound])
+            messageBuffer = String(messageBuffer[range.upperBound...])
+            processMessage(jsonString)
+        }
+    }
+
+    private func processMessage(_ jsonString: String) {
+        print("[BLEManager] Processing message: \(jsonString)")
+
+        guard let data = jsonString.data(using: .utf8),
+              let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
+            print("[BLEManager] Failed to parse JSON: \(jsonString)")
+            return
+        }
+
+        if let type = json["type"] as? String, type == "target_reached" {
+            let targetPressure = parseDouble(json["targetPressure"]) ?? 0
+            let currentPressure = parseDouble(json["currentPressure"]) ?? 0
+            print("[BLEManager] Target reached: target=\(targetPressure), current=\(currentPressure)")
+            targetReachedSubject.send((target: targetPressure, current: currentPressure))
+            return
+        }
+
+        if json["DeviceName"] != nil {
+            let settings = DeviceSettings.from(json: json)
+            deviceSettings = settings
+            onDeviceFullSettingsReceived(settings)
+            return
+        }
+
+        let hasPressure = json["CurrentPressure"] != nil || json["Pressure"] != nil
+        let hasOperationMode = json["operationMode"] != nil
+
+        if hasPressure && hasOperationMode {
+            let pressure: Double
+            if let p = parseDouble(json["CurrentPressure"]) {
+                pressure = p
+            } else if let p = parseDouble(json["Pressure"]) {
+                pressure = p
+            } else {
+                pressure = 0
             }
-        } catch {
-            print("Error parsing received data: \(error)")
+
+            let operationMode = parseInt(json["operationMode"]) ?? BLEConstants.modeSettings
+            let rawADC = parseStringThenInt(json["rawADC"])
+            let voltage = parseStringThenDouble(json["voltage"])
+
+            let status = DeviceStatus(
+                pressure: pressure,
+                operationMode: operationMode,
+                rawADC: rawADC,
+                voltage: voltage
+            )
+
+            print("[BLEManager] DeviceStatus: pressure=\(pressure), mode=\(operationMode), rawADC=\(rawADC.map(String.init) ?? "nil"), voltage=\(voltage.map(String.init) ?? "nil")")
+            onDeviceStatusReceived(status)
+            return
         }
+
+        print("[BLEManager] Unrecognized message: \(jsonString)")
     }
 
-    private func handleStatusUpdate(_ statusDict: [String: Any]) {
-        guard let currentPressure = statusDict["currentPressure"] as? Double else { return }
+    private func onDeviceStatusReceived(_ status: DeviceStatus) {
+        if ignoreNextStatusUpdate {
+            ignoreNextStatusUpdate = false
+            print("[BLEManager] Ignoring first status update after inflate/deflate command")
+            return
+        }
+        deviceStatus = status
+    }
 
-        let targetPressure = statusDict["targetPressure"] as? Double
-        let isInflating = statusDict["isInflating"] as? Bool ?? false
-        let isDeflating = statusDict["isDeflating"] as? Bool ?? false
-        let batteryLevel = statusDict["batteryLevel"] as? Int
-
+    private func onDeviceFullSettingsReceived(_ settings: DeviceSettings) {
+        let pressureValue = settings.currentPressure
+        let currentStatus = deviceStatus
         deviceStatus = DeviceStatus(
-            currentPressure: currentPressure,
-            targetPressure: targetPressure,
-            isInflating: isInflating,
-            isDeflating: isDeflating,
-            batteryLevel: batteryLevel
+            pressure: pressureValue,
+            operationMode: settings.operationMode,
+            rawADC: currentStatus?.rawADC,
+            voltage: currentStatus?.voltage
         )
+        print("[BLEManager] Updated DeviceStatus from full settings, preserved debug values")
     }
 
-    private func handleSettingsUpdate(_ settingsDict: [String: Any]) {
-        do {
-            let settingsData = try JSONSerialization.data(withJSONObject: settingsDict, options: [])
-            deviceSettings = try JSONDecoder().decode(DeviceSettings.self, from: settingsData)
-        } catch {
-            print("Error decoding device settings: \(error)")
+    // MARK: - Debug Mode Sync
+
+    private func syncDebugModeAfterConnection() {
+        debugSyncTask?.cancel()
+        debugSyncTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            guard !Task.isCancelled, let self = self else { return }
+            let debugEnabled = self.settingsManager?.debugMode ?? false
+            print("[BLEManager] Syncing debug mode on connection: \(debugEnabled)")
+            self.sendDebugMode(enabled: debugEnabled)
         }
+    }
+
+    // MARK: - Settings Request Scheduling
+
+    private func scheduleSettingsRequest() {
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            guard let self = self else { return }
+            if self.deviceSettings == nil && self.settingsRequestAttempts < self.maxSettingsRequestAttempts {
+                self.settingsRequestAttempts += 1
+                print("[BLEManager] Requesting settings (attempt \(self.settingsRequestAttempts))")
+                self.requestSettings()
+                if self.settingsRequestAttempts < self.maxSettingsRequestAttempts {
+                    self.scheduleSettingsRequest()
+                }
+            }
+        }
+    }
+
+    // MARK: - Connection Timeout
+
+    private func handleConnectionTimeout() {
+        if connectionState == .connecting {
+            disconnect()
+            connectionState = .connectionError
+        }
+    }
+
+    // MARK: - JSON Parsing Helpers
+
+    private func parseDouble(_ value: Any?) -> Double? {
+        if let n = value as? Double { return n }
+        if let n = value as? Int { return Double(n) }
+        if let s = value as? String { return Double(s) }
+        return nil
+    }
+
+    private func parseInt(_ value: Any?) -> Int? {
+        if let n = value as? Int { return n }
+        if let n = value as? Double { return Int(n) }
+        if let s = value as? String { return Int(s) }
+        return nil
+    }
+
+    private func parseStringThenInt(_ value: Any?) -> Int? {
+        if let n = value as? Int { return n }
+        if let s = value as? String { return Int(s) }
+        if let n = value as? Double { return Int(n) }
+        return nil
+    }
+
+    private func parseStringThenDouble(_ value: Any?) -> Double? {
+        if let n = value as? Double { return n }
+        if let s = value as? String { return Double(s) }
+        if let n = value as? Int { return Double(n) }
+        return nil
     }
 }
 
 // MARK: - CBCentralManagerDelegate
 extension BLEManager: CBCentralManagerDelegate {
-    func centralManagerDidUpdateState(_ central: CBCentralManager) {
-        switch central.state {
-        case .poweredOn:
-            if connectionState == .bluetoothDisabled {
-                connectionState = .disconnected
+    nonisolated func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            switch central.state {
+            case .poweredOn:
+                if self.connectionState == .bluetoothDisabled {
+                    self.connectionState = .disconnected
+                }
+            case .poweredOff, .unauthorized, .unsupported:
+                self.connectionState = .bluetoothDisabled
+                self.disconnect()
+            case .resetting:
+                self.connectionState = .connectionError
+            default:
+                break
             }
-        case .poweredOff, .unauthorized, .unsupported:
-            connectionState = .bluetoothDisabled
-            disconnect()
-        case .resetting:
-            connectionState = .connectionError
-        default:
-            break
         }
     }
 
-    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String: Any], rssi RSSI: NSNumber) {
-        let device = BLEDevice(
-            peripheral: peripheral,
-            advertisementData: advertisementData,
-            rssi: RSSI.intValue
-        )
+    nonisolated func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral,
+                                     advertisementData: [String: Any], rssi RSSI: NSNumber) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            let device = BLEDevice(
+                peripheral: peripheral,
+                advertisementData: advertisementData,
+                rssi: RSSI.intValue
+            )
 
-        // Update existing device or add new one
-        if let index = discoveredDevices.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
-            discoveredDevices[index] = device
-        } else {
-            discoveredDevices.append(device)
+            if let index = self.discoveredDevices.firstIndex(where: { $0.peripheral.identifier == peripheral.identifier }) {
+                self.discoveredDevices[index] = device
+            } else {
+                self.discoveredDevices.append(device)
+            }
         }
     }
 
-    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-        connectionTimer?.invalidate()
-        connectionTimer = nil
+    nonisolated func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            self.connectionTimer?.invalidate()
+            self.connectionTimer = nil
 
-        connectionState = .connected
-        connectedDeviceName = peripheral.name ?? "Unknown Device"
+            self.connectionState = .connected
+            self.connectedDeviceName = peripheral.name ?? "Unknown Device"
 
-        // Save the device automatically when connected
-        if let connectedDevice = discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
-            saveDevice(connectedDevice)
+            if let device = self.discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
+                self.saveDevice(device)
+            }
+
+            peripheral.discoverServices([self.serviceUUID])
         }
-
-        // Discover services
-        peripheral.discoverServices([serviceUUID])
     }
 
-    func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-        connectionTimer?.invalidate()
-        connectionTimer = nil
-        connectionState = .connectionError
+    nonisolated func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+        Task { @MainActor [weak self] in
+            self?.connectionTimer?.invalidate()
+            self?.connectionTimer = nil
+            self?.connectionState = .connectionError
+        }
     }
 
-    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-        disconnect()
+    nonisolated func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+        Task { @MainActor [weak self] in
+            self?.disconnect()
+        }
     }
 }
 
 // MARK: - CBPeripheralDelegate
 extension BLEManager: CBPeripheralDelegate {
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
-        guard error == nil,
-              let services = peripheral.services else {
-            connectionState = .connectionError
-            return
-        }
+    nonisolated func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        Task { @MainActor [weak self] in
+            guard let self = self, error == nil, let services = peripheral.services else {
+                self?.connectionState = .connectionError
+                return
+            }
 
-        for service in services {
-            if service.uuid == serviceUUID {
-                peripheral.discoverCharacteristics([commandUUID, notifyUUID], for: service)
+            for service in services where service.uuid == self.serviceUUID {
+                peripheral.discoverCharacteristics([self.commandUUID, self.notifyUUID], for: service)
             }
         }
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
-        guard error == nil,
-              let characteristics = service.characteristics else {
-            connectionState = .connectionError
-            return
-        }
-
-        for characteristic in characteristics {
-            switch characteristic.uuid {
-            case commandUUID:
-                commandCharacteristic = characteristic
-            case notifyUUID:
-                notifyCharacteristic = characteristic
-                peripheral.setNotifyValue(true, for: characteristic)
-            default:
-                break
+    nonisolated func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        Task { @MainActor [weak self] in
+            guard let self = self, error == nil, let characteristics = service.characteristics else {
+                self?.connectionState = .connectionError
+                return
             }
-        }
 
-        // Request initial status when connected
-        if commandCharacteristic != nil && notifyCharacteristic != nil {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                self.requestStatus()
+            for characteristic in characteristics {
+                switch characteristic.uuid {
+                case self.commandUUID:
+                    self.commandCharacteristic = characteristic
+                case self.notifyUUID:
+                    self.notifyCharacteristic = characteristic
+                    peripheral.setNotifyValue(true, for: characteristic)
+                default:
+                    break
+                }
+            }
+
+            if self.commandCharacteristic != nil && self.notifyCharacteristic != nil {
+                self.settingsRequestAttempts = 0
+                self.scheduleSettingsRequest()
+                self.syncDebugModeAfterConnection()
             }
         }
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
-        guard error == nil,
-              let data = characteristic.value else {
-            return
+    nonisolated func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
+        Task { @MainActor [weak self] in
+            guard error == nil, let data = characteristic.value else { return }
+            self?.handleReceivedData(data)
         }
-
-        handleReceivedData(data)
     }
 
-    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
-        if let error = error {
-            print("Error writing to characteristic: \(error)")
+    nonisolated func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            if let error = error {
+                print("[BLEManager] Write error: \(error.localizedDescription)")
+            }
+            self.isWriting = false
+
+            Task { @MainActor in
+                try? await Task.sleep(nanoseconds: 50_000_000)
+                self.processWriteQueue()
+            }
         }
     }
 }
 
 // MARK: - Device Management
 extension BLEManager {
-    /// Get list of saved devices
     func getSavedDevices() -> [SavedDevice] {
         return SavedDevice.load().sorted { $0.connectionPriority < $1.connectionPriority }
     }
 
-    /// Save a device to the saved devices list
     func saveDevice(_ device: BLEDevice) {
         var savedDevices = SavedDevice.load()
+        if savedDevices.count >= 2 {
+            if !savedDevices.contains(where: { $0.address == device.address }) {
+                return
+            }
+        }
 
-        // Check if device already exists
-        if !savedDevices.contains(where: { $0.address == device.address }) {
-            let savedDevice = SavedDevice(
+        if let index = savedDevices.firstIndex(where: { $0.address == device.address }) {
+            savedDevices[index].connectionPriority = 0
+            for i in savedDevices.indices where i != index {
+                savedDevices[i].connectionPriority = savedDevices[i].connectionPriority + 1
+            }
+        } else {
+            for i in savedDevices.indices {
+                savedDevices[i].connectionPriority += 1
+            }
+            let saved = SavedDevice(
                 name: device.name,
                 address: device.address,
-                connectionPriority: savedDevices.count
+                connectionPriority: 0
             )
-            savedDevices.append(savedDevice)
-            SavedDevice.save(savedDevices)
-        }
-    }
-
-    /// Delete a device from the saved devices list
-    func deleteDevice(_ address: String) {
-        var savedDevices = SavedDevice.load()
-        savedDevices.removeAll { $0.address == address }
-
-        // Reorder priorities
-        for (index, var device) in savedDevices.enumerated() {
-            device.connectionPriority = index
+            savedDevices.append(saved)
         }
 
         SavedDevice.save(savedDevices)
     }
 
-    /// Reorder devices with new priority order
-    func reorderDevices(_ addressOrder: [String]) {
+    func deleteDevice(_ address: String) {
         var savedDevices = SavedDevice.load()
-
-        // Create a dictionary for quick lookup
-        var deviceDict = Dictionary(uniqueKeysWithValues: savedDevices.map { ($0.address, $0) })
-
-        // Reorder according to new order
-        var reorderedDevices: [SavedDevice] = []
-        for (index, address) in addressOrder.enumerated() {
-            if var device = deviceDict[address] {
-                device.connectionPriority = index
-                reorderedDevices.append(device)
-            }
+        savedDevices.removeAll { $0.address == address }
+        for i in savedDevices.indices {
+            savedDevices[i].connectionPriority = i
         }
-
-        SavedDevice.save(reorderedDevices)
+        SavedDevice.save(savedDevices)
     }
 
-    /// Attempt to connect to saved devices in priority order
-    func connectToSavedDevices() {
-        let savedDevices = getSavedDevices()
-
-        guard !savedDevices.isEmpty else {
-            startScanning()
-            return
+    func reorderDevices(_ addressOrder: [String]) {
+        var savedDevices = SavedDevice.load()
+        var reordered: [SavedDevice] = []
+        for (index, address) in addressOrder.enumerated() {
+            if var device = savedDevices.first(where: { $0.address == address }) {
+                device.connectionPriority = index
+                reordered.append(device)
+            }
         }
-
-        // Try to connect to devices in priority order
-        // For now, just start scanning - this can be enhanced to try specific devices
-        startScanning()
+        SavedDevice.save(reordered)
     }
 }

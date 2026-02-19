@@ -1,5 +1,4 @@
 import SwiftUI
-import CarPlay
 
 @main
 struct TirePressureManagerApp: App {
@@ -11,16 +10,10 @@ struct TirePressureManagerApp: App {
             ContentView()
                 .environmentObject(bleManager)
                 .environmentObject(settingsManager)
-                .preferredColorScheme(settingsManager.displayMode.colorScheme)
-        }
-    }
-}
-
-// MARK: - CarPlay Scene
-extension TirePressureManagerApp {
-    var carPlayScene: some Scene {
-        CPTemplateApplicationScene(id: "CarPlayScene") { templateApplicationScene in
-            CarPlaySceneDelegate(bleManager: bleManager)
+                .preferredColorScheme(.dark)
+                .onAppear {
+                    bleManager.setSettingsManager(settingsManager)
+                }
         }
     }
 }

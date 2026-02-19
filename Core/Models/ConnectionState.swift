@@ -1,36 +1,31 @@
 import Foundation
 
-/// Represents the current state of the Bluetooth connection
-enum ConnectionState: String, CaseIterable {
-    case disconnected = "Disconnected"
-    case scanning = "Scanning"
-    case connecting = "Connecting"
-    case connected = "Connected"
-    case bluetoothDisabled = "Bluetooth Disabled"
-    case connectionError = "Connection Error"
+enum ConnectionState: Equatable {
+    case disconnected
+    case scanning
+    case connecting
+    case connected
+    case bluetoothDisabled
+    case connectionError
 
-    var isConnected: Bool {
-        return self == .connected
-    }
+    var isConnected: Bool { self == .connected }
 
-    var canScan: Bool {
-        return self == .disconnected
-    }
+    var canScan: Bool { self == .disconnected }
 
     var displayText: String {
         switch self {
         case .disconnected:
-            return NSLocalizedString("disconnected", comment: "Device disconnected")
+            return NSLocalizedString("disconnected", comment: "Disconnected")
         case .scanning:
-            return NSLocalizedString("scanning", comment: "Scanning for devices")
+            return NSLocalizedString("scanning", comment: "Scanning")
         case .connecting:
-            return NSLocalizedString("connecting", comment: "Connecting to device")
+            return NSLocalizedString("connecting", comment: "Connecting")
         case .connected:
-            return NSLocalizedString("connected", comment: "Device connected")
+            return NSLocalizedString("connected", comment: "Connected")
         case .bluetoothDisabled:
-            return NSLocalizedString("bluetooth_disabled", comment: "Bluetooth is disabled")
+            return NSLocalizedString("bluetooth_disabled", comment: "Bluetooth Disabled")
         case .connectionError:
-            return NSLocalizedString("connection_error", comment: "Connection error occurred")
+            return NSLocalizedString("connection_error", comment: "Connection Error")
         }
     }
 }

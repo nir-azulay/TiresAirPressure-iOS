@@ -6,19 +6,16 @@ struct ConnectionView: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Bluetooth status
-                BluetoothStatusCard()
-
-                // Scan controls
-                ScanControlCard()
-
-                // Device list
-                DeviceListSection()
-
-                Spacer()
+            ZStack {
+                AppColors.background.ignoresSafeArea()
+                VStack(spacing: 20) {
+                    BluetoothStatusCard()
+                    ScanControlCard()
+                    DeviceListSection()
+                    Spacer()
+                }
+                .padding()
             }
-            .padding()
             .navigationTitle(NSLocalizedString("scan_devices", comment: "Scan Devices"))
             .alert(NSLocalizedString("bluetooth_required", comment: "Bluetooth Required"),
                    isPresented: $showingPermissionAlert) {
@@ -60,37 +57,29 @@ struct BluetoothStatusCard: View {
                     bleManager.disconnect()
                 }
                 .font(.caption)
-                .foregroundColor(.red)
+                .foregroundColor(AppColors.stopRed)
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(AppColors.cardBackground)
         .cornerRadius(12)
     }
 
     private var bluetoothIcon: String {
         switch bleManager.connectionState {
-        case .connected:
-            return "bluetooth.fill"
-        case .scanning:
-            return "bluetooth"
-        case .bluetoothDisabled:
-            return "bluetooth.slash"
-        default:
-            return "bluetooth"
+        case .connected: return "bluetooth.fill"
+        case .scanning: return "bluetooth"
+        case .bluetoothDisabled: return "bluetooth.slash"
+        default: return "bluetooth"
         }
     }
 
     private var bluetoothColor: Color {
         switch bleManager.connectionState {
-        case .connected:
-            return .green
-        case .scanning:
-            return .blue
-        case .bluetoothDisabled:
-            return .red
-        default:
-            return .orange
+        case .connected: return AppColors.connectedGreen
+        case .scanning: return AppColors.scanningBlue
+        case .bluetoothDisabled: return AppColors.disconnectedRed
+        default: return AppColors.connectingAmber
         }
     }
 }
@@ -102,7 +91,6 @@ struct ScanControlCard: View {
     var body: some View {
         VStack(spacing: 16) {
             if bleManager.isScanning {
-                // Scanning state
                 VStack(spacing: 12) {
                     ProgressView()
                         .scaleEffect(1.2)
@@ -117,11 +105,10 @@ struct ScanControlCard: View {
                     .foregroundColor(.white)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.red)
+                    .background(AppColors.stopRed)
                     .cornerRadius(12)
                 }
             } else {
-                // Not scanning state
                 Button(NSLocalizedString("scan_devices", comment: "Scan Devices")) {
                     bleManager.startScanning()
                 }
@@ -130,15 +117,15 @@ struct ScanControlCard: View {
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()
-                .background(bleManager.connectionState.canScan ? Color.blue : Color.gray)
+                .background(bleManager.connectionState.canScan ? AppColors.primary : Color.gray)
                 .cornerRadius(12)
                 .disabled(!bleManager.connectionState.canScan)
             }
         }
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(radius: 2)
+                .background(AppColors.cardBackground)
+                .cornerRadius(12)
+                .shadow(color: Color.black.opacity(0.3), radius: 4, y: 2)
     }
 }
 
@@ -177,7 +164,7 @@ struct DeviceRow: View {
     let device: BLEDevice
 
     var body: some View {
-        Button(action: { connectToDevice() }) {
+        Button(action: { bleManager.connect(to: device) }) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(device.name)
@@ -199,8 +186,7 @@ struct DeviceRow: View {
                 VStack {
                     SignalStrengthIndicator(strength: device.signalStrength)
 
-                    if bleManager.connectionState == .connecting &&
-                       bleManager.connectedPeripheral?.identifier == device.peripheral.identifier {
+                    if bleManager.connectionState == .connecting {
                         ProgressView()
                             .scaleEffect(0.8)
                     } else {
@@ -210,24 +196,17 @@ struct DeviceRow: View {
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
+            .background(AppColors.cardBackground)
             .cornerRadius(12)
         }
         .disabled(bleManager.connectionState == .connecting)
     }
 
-    private func connectToDevice() {
-        bleManager.connect(to: device)
-    }
-
     private var signalColor: Color {
         switch device.signalStrength {
-        case .excellent, .good:
-            return .green
-        case .fair:
-            return .orange
-        case .weak, .noSignal:
-            return .red
+        case .excellent, .good: return AppColors.connectedGreen
+        case .fair: return AppColors.connectingAmber
+        case .weak, .noSignal: return AppColors.disconnectedRed
         }
     }
 }
@@ -247,11 +226,11 @@ struct SignalStrengthIndicator: View {
     }
 
     private func barColor(for index: Int) -> Color {
-        let strengthLevel = strengthToLevel(strength)
-        return index < strengthLevel ? signalColor : Color(.systemGray4)
+        let level = strengthLevel
+        return index < level ? signalColor : Color(.systemGray4)
     }
 
-    private func strengthToLevel(_ strength: SignalStrength) -> Int {
+    private var strengthLevel: Int {
         switch strength {
         case .excellent: return 4
         case .good: return 3
@@ -263,9 +242,9 @@ struct SignalStrengthIndicator: View {
 
     private var signalColor: Color {
         switch strength {
-        case .excellent, .good: return .green
-        case .fair: return .orange
-        case .weak, .noSignal: return .red
+        case .excellent, .good: return AppColors.connectedGreen
+        case .fair: return AppColors.connectingAmber
+        case .weak, .noSignal: return AppColors.disconnectedRed
         }
     }
 }
@@ -286,7 +265,7 @@ struct EmptyDeviceListView: View {
         }
         .frame(maxWidth: .infinity, minHeight: 120)
         .padding()
-        .background(Color(.systemGray6))
+        .background(AppColors.cardBackground)
         .cornerRadius(12)
     }
 
