@@ -105,7 +105,7 @@ struct EmptyDevicesView: View {
         VStack(spacing: 16) {
             Spacer()
 
-            Image(systemName: "bluetooth.slash")
+            Image(systemName: "dot.radiowaves.left.and.right.slash")
                 .font(.system(size: 64))
                 .foregroundColor(.secondary)
 

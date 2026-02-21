@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ConnectionView: View {
     @EnvironmentObject var bleManager: BLEManager
+    @Environment(\.dismiss) private var dismiss
     @State private var showingPermissionAlert = false
 
     var body: some View {
@@ -17,6 +18,14 @@ struct ConnectionView: View {
                 .padding()
             }
             .navigationTitle(NSLocalizedString("scan_devices", comment: "Scan Devices"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(NSLocalizedString("close", comment: "Close")) {
+                        dismiss()
+                    }
+                }
+            }
             .alert(NSLocalizedString("bluetooth_required", comment: "Bluetooth Required"),
                    isPresented: $showingPermissionAlert) {
                 Button("OK") { }
@@ -67,10 +76,10 @@ struct BluetoothStatusCard: View {
 
     private var bluetoothIcon: String {
         switch bleManager.connectionState {
-        case .connected: return "bluetooth.fill"
-        case .scanning: return "bluetooth"
-        case .bluetoothDisabled: return "bluetooth.slash"
-        default: return "bluetooth"
+        case .connected: return "dot.radiowaves.left.and.right.circle.fill"
+        case .scanning: return "dot.radiowaves.left.and.right"
+        case .bluetoothDisabled: return "dot.radiowaves.left.and.right.slash"
+        default: return "dot.radiowaves.left.and.right"
         }
     }
 
@@ -112,8 +121,7 @@ struct ScanControlCard: View {
                 Button(NSLocalizedString("scan_devices", comment: "Scan Devices")) {
                     bleManager.startScanning()
                 }
-                .font(.title2)
-                .fontWeight(.medium)
+                .font(.title2.weight(.medium))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
                 .padding()

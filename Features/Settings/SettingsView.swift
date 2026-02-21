@@ -3,103 +3,149 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @EnvironmentObject var bleManager: BLEManager
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var editDisplayMode: DisplayMode = .dark
+    @State private var editLanguage: AppLanguage = .system
+    @State private var editDebugMode: Bool = false
+    @State private var editSimulationMode: Bool = false
+    @State private var editPresetPressures: [Double] = []
+
     @State private var showingDeviceSettings = false
     @State private var showingResetAlert = false
+    @State private var hasUnsavedChanges = false
 
     var body: some View {
         NavigationView {
-            Form {
-                Section(NSLocalizedString("app_settings", comment: "App Settings")) {
-                    // Note: display mode is always dark to match Android
-                    Picker(NSLocalizedString("display_mode", comment: "Display Mode"),
-                           selection: $settingsManager.displayMode) {
-                        ForEach(DisplayMode.allCases, id: \.self) { mode in
-                            Text(mode.displayText).tag(mode)
-                        }
-                    }
-
-                    Picker(NSLocalizedString("language", comment: "Language"),
-                           selection: $settingsManager.language) {
-                        ForEach(AppLanguage.allCases, id: \.self) { lang in
-                            Text(lang.displayText).tag(lang)
-                        }
-                    }
-
-                    Toggle(NSLocalizedString("debug_mode", comment: "Debug Mode"),
-                           isOn: Binding(
-                            get: { settingsManager.debugMode },
-                            set: { newValue in
-                                settingsManager.updateDebugMode(newValue)
-                                bleManager.sendDebugMode(enabled: newValue)
-                            }
-                           ))
-
-                    Toggle(NSLocalizedString("simulation_mode", comment: "Simulation Mode"),
-                           isOn: Binding(
-                            get: { settingsManager.simulationMode },
-                            set: { newValue in
-                                settingsManager.updateSimulationMode(newValue)
-                                bleManager.sendSimulationMode(enabled: newValue)
-                            }
-                           ))
-                }
-
-                Section(NSLocalizedString("preset_pressures_title", comment: "Preset Pressures")) {
-                    PresetPressuresSection()
-                }
-
-                Section(NSLocalizedString("device_management", comment: "Device Management")) {
-                    NavigationLink(destination: DeviceManagementView()) {
-                        HStack {
-                            Image(systemName: "externaldrive.connected.to.line.below")
-                                .foregroundColor(AppColors.primary)
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(NSLocalizedString("manage_paired_devices", comment: "Manage Paired Devices"))
-                                Text(NSLocalizedString("manage_paired_devices_description", comment: "Description"))
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+            VStack(spacing: 0) {
+                Form {
+                    Section(NSLocalizedString("app_settings", comment: "App Settings")) {
+                        Picker(NSLocalizedString("display_mode", comment: "Display Mode"),
+                               selection: $editDisplayMode) {
+                            ForEach(DisplayMode.allCases, id: \.self) { mode in
+                                Text(mode.displayText).tag(mode)
                             }
                         }
-                    }
-                }
 
-                if bleManager.connectionState.isConnected {
-                    Section(NSLocalizedString("device_settings", comment: "Device Settings")) {
-                        Button(action: { showingDeviceSettings = true }) {
+                        Picker(NSLocalizedString("language", comment: "Language"),
+                               selection: $editLanguage) {
+                            ForEach(AppLanguage.allCases, id: \.self) { lang in
+                                Text(lang.displayText).tag(lang)
+                            }
+                        }
+
+                        Toggle(NSLocalizedString("debug_mode", comment: "Debug Mode"),
+                               isOn: $editDebugMode)
+
+                        Toggle(NSLocalizedString("simulation_mode", comment: "Simulation Mode"),
+                               isOn: $editSimulationMode)
+                    }
+
+                    Section(NSLocalizedString("preset_pressures_title", comment: "Preset Pressures")) {
+                        PresetPressuresSection(
+                            presetPressures: $editPresetPressures,
+                            maxPressureCount: settingsManager.maxPressureCount,
+                            minPressureCount: settingsManager.minPressureCount
+                        )
+                    }
+
+                    Section(NSLocalizedString("device_management", comment: "Device Management")) {
+                        NavigationLink(destination: DeviceManagementView()) {
                             HStack {
-                                Image(systemName: "gearshape.2")
+                                Image(systemName: "externaldrive.connected.to.line.below")
                                     .foregroundColor(AppColors.primary)
-                                Text("Configure Device Settings")
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .foregroundColor(.secondary)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(NSLocalizedString("manage_paired_devices", comment: "Manage Paired Devices"))
+                                    Text(NSLocalizedString("manage_paired_devices_description", comment: "Description"))
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
                             }
                         }
-                        .foregroundColor(.primary)
+                    }
 
-                        Button(action: { bleManager.requestSettings() }) {
+                    if bleManager.connectionState.isConnected {
+                        Section(NSLocalizedString("device_settings", comment: "Device Settings")) {
+                            Button(action: { showingDeviceSettings = true }) {
+                                HStack {
+                                    Image(systemName: "gearshape.2")
+                                        .foregroundColor(AppColors.primary)
+                                    Text("Configure Device Settings")
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .foregroundColor(.primary)
+
+                            Button(action: { bleManager.requestSettings() }) {
+                                HStack {
+                                    Image(systemName: "arrow.clockwise")
+                                        .foregroundColor(AppColors.connectingAmber)
+                                    Text(NSLocalizedString("request_settings", comment: "Request Settings"))
+                                }
+                            }
+                            .foregroundColor(.primary)
+                        }
+                    }
+
+                    Section {
+                        Button(action: { showingResetAlert = true }) {
                             HStack {
-                                Image(systemName: "arrow.clockwise")
-                                    .foregroundColor(AppColors.connectingAmber)
-                                Text(NSLocalizedString("request_settings", comment: "Request Settings"))
+                                Image(systemName: "arrow.counterclockwise")
+                                    .foregroundColor(.red)
+                                Text("Reset to Defaults")
+                                    .foregroundColor(.red)
                             }
                         }
-                        .foregroundColor(.primary)
                     }
                 }
 
-                Section {
-                    Button(action: { showingResetAlert = true }) {
-                        HStack {
-                            Image(systemName: "arrow.counterclockwise")
-                                .foregroundColor(.red)
-                            Text("Reset to Defaults")
-                                .foregroundColor(.red)
+                // Bottom bar with Save and Close/Discard buttons (matching Android)
+                VStack(spacing: 8) {
+                    if hasUnsavedChanges {
+                        Text(NSLocalizedString("unsaved_changes_message", comment: ""))
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 16)
+                    }
+
+                    HStack(spacing: 12) {
+                        Button(action: saveSettings) {
+                            Text(NSLocalizedString("save_settings", comment: "Save Settings"))
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(AppColors.primary)
+                                .cornerRadius(10)
+                        }
+
+                        Button(action: closeOrDiscard) {
+                            Text(hasUnsavedChanges
+                                 ? NSLocalizedString("discard", comment: "Discard Changes")
+                                 : NSLocalizedString("close", comment: "Close"))
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 48)
+                                .background(Color.gray.opacity(0.6))
+                                .cornerRadius(10)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .stroke(Color.gray, lineWidth: 1)
+                                )
                         }
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 8)
                 }
+                .padding(.top, 8)
+                .background(Color(UIColor.systemGroupedBackground))
             }
             .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingDeviceSettings) {
                 DeviceSettingsView()
             }
@@ -107,28 +153,82 @@ struct SettingsView: View {
                 Button("Cancel", role: .cancel) { }
                 Button("Reset", role: .destructive) {
                     settingsManager.resetToDefaults()
+                    loadFromSettingsManager()
+                    hasUnsavedChanges = false
                 }
             } message: {
                 Text("This will reset all settings to their default values.")
             }
         }
+        .onAppear { loadFromSettingsManager() }
+        .onChange(of: editDisplayMode) { _ in checkForChanges() }
+        .onChange(of: editLanguage) { _ in checkForChanges() }
+        .onChange(of: editDebugMode) { _ in checkForChanges() }
+        .onChange(of: editSimulationMode) { _ in checkForChanges() }
+        .onChange(of: editPresetPressures) { _ in checkForChanges() }
+    }
+
+    private func loadFromSettingsManager() {
+        editDisplayMode = settingsManager.displayMode
+        editLanguage = settingsManager.language
+        editDebugMode = settingsManager.debugMode
+        editSimulationMode = settingsManager.simulationMode
+        editPresetPressures = settingsManager.presetPressures
+        hasUnsavedChanges = false
+    }
+
+    private func checkForChanges() {
+        hasUnsavedChanges = editDisplayMode != settingsManager.displayMode
+            || editLanguage != settingsManager.language
+            || editDebugMode != settingsManager.debugMode
+            || editSimulationMode != settingsManager.simulationMode
+            || editPresetPressures != settingsManager.presetPressures
+    }
+
+    private func saveSettings() {
+        settingsManager.displayMode = editDisplayMode
+        settingsManager.language = editLanguage
+        settingsManager.presetPressures = editPresetPressures
+
+        if editDebugMode != settingsManager.debugMode {
+            settingsManager.updateDebugMode(editDebugMode)
+            bleManager.sendDebugMode(enabled: editDebugMode)
+        }
+        if editSimulationMode != settingsManager.simulationMode {
+            settingsManager.updateSimulationMode(editSimulationMode)
+            bleManager.sendSimulationMode(enabled: editSimulationMode)
+        }
+
+        settingsManager.saveSettings()
+        hasUnsavedChanges = false
+        dismiss()
+    }
+
+    private func closeOrDiscard() {
+        dismiss()
     }
 }
 
 // MARK: - Preset Pressures Section
 struct PresetPressuresSection: View {
-    @EnvironmentObject var settingsManager: SettingsManager
+    @Binding var presetPressures: [Double]
+    let maxPressureCount: Int
+    let minPressureCount: Int
+
     @State private var newPressure: String = ""
     @State private var showingAddPressure = false
 
+    private var canAdd: Bool { presetPressures.count < maxPressureCount }
+    private var canRemove: Bool { presetPressures.count > minPressureCount }
+
     var body: some View {
-        ForEach(Array(settingsManager.presetPressures.enumerated()), id: \.offset) { _, pressure in
+        ForEach(Array(presetPressures.enumerated()), id: \.offset) { _, pressure in
             HStack {
                 Text(String(format: "%.0f PSI", pressure))
                 Spacer()
 
-                if settingsManager.canRemovePresetPressure {
-                    Button(action: { settingsManager.removePresetPressure(pressure) }) {
+                if canRemove {
+                    Button(action: { presetPressures.removeAll { $0 == pressure } }) {
                         Image(systemName: "minus.circle.fill")
                             .foregroundColor(.red)
                     }
@@ -136,7 +236,7 @@ struct PresetPressuresSection: View {
             }
         }
 
-        if settingsManager.canAddPresetPressure {
+        if canAdd {
             Button(action: { showingAddPressure = true }) {
                 HStack {
                     Image(systemName: "plus.circle.fill")
@@ -154,15 +254,17 @@ struct PresetPressuresSection: View {
             }
         }
 
-        Text("Presets: \(settingsManager.presetPressures.count)/\(settingsManager.maxPressureCount)")
+        Text("Presets: \(presetPressures.count)/\(maxPressureCount)")
             .font(.caption)
             .foregroundColor(.secondary)
     }
 
     private func addNewPressure() {
         guard let pressure = Double(newPressure),
-              pressure >= 1.0 && pressure <= 80.0 else { return }
-        settingsManager.addPresetPressure(pressure)
+              pressure >= 1.0 && pressure <= 80.0,
+              !presetPressures.contains(pressure) else { return }
+        presetPressures.append(pressure)
+        presetPressures.sort()
         newPressure = ""
     }
 }

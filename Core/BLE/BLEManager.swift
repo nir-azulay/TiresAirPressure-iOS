@@ -325,7 +325,7 @@ class BLEManager: NSObject, ObservableObject {
                 voltage: voltage
             )
 
-            print("[BLEManager] DeviceStatus: pressure=\(pressure), mode=\(operationMode), rawADC=\(rawADC.map(String.init) ?? "nil"), voltage=\(voltage.map(String.init) ?? "nil")")
+            print("[BLEManager] DeviceStatus: pressure=\(pressure), mode=\(operationMode), rawADC=\(rawADC.map { String($0) } ?? "nil"), voltage=\(voltage.map { String($0) } ?? "nil")")
             onDeviceStatusReceived(status)
             return
         }

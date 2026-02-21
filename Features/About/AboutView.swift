@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AboutView: View {
     @EnvironmentObject var bleManager: BLEManager
+    @Environment(\.dismiss) private var dismiss
     @State private var connectionDuration: TimeInterval = 0
     @State private var timer: Timer?
 
@@ -136,6 +137,13 @@ struct AboutView: View {
             }
             .navigationTitle(NSLocalizedString("about", comment: "About"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(NSLocalizedString("close", comment: "Close")) {
+                        dismiss()
+                    }
+                }
+            }
             .toolbarBackground(AppColors.primary, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)

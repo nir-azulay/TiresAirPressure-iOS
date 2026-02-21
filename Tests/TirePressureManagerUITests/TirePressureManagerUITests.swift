@@ -68,7 +68,7 @@ final class TirePressureManagerUITests: XCTestCase {
         // Test not connected state elements
         let notConnectedText = app.staticTexts["Not Connected"]
         if notConnectedText.exists {
-            XCTAssertTrue(app.images["bluetooth.slash"].exists || app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Connect to a device'")).firstMatch.exists)
+            XCTAssertTrue(app.images["dot.radiowaves.left.and.right.slash"].exists || app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Connect to a device'")).firstMatch.exists)
         }
     }
 

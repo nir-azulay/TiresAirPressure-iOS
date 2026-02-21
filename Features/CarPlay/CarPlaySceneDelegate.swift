@@ -72,7 +72,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
         if bleManager.connectionState.isConnected {
             let selectTargetAction = CPTextButton(
-                text: NSLocalizedString("auto_select_target", comment: "Select Target Pressure"),
+                title: NSLocalizedString("auto_select_target", comment: "Select Target Pressure"),
                 textStyle: .normal
             ) { [weak self] _ in
                 self?.presentTargetSelectionTemplate()
@@ -81,7 +81,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
             if let status = bleManager.deviceStatus, status.isOperating {
                 let stopAction = CPTextButton(
-                    text: NSLocalizedString("stop", comment: "Stop"),
+                    title: NSLocalizedString("stop", comment: "Stop"),
                     textStyle: .cancel
                 ) { [weak self] _ in
                     Task { @MainActor in
@@ -92,7 +92,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
             }
         } else {
             let connectAction = CPTextButton(
-                text: NSLocalizedString("connect", comment: "Connect"),
+                title: NSLocalizedString("connect", comment: "Connect"),
                 textStyle: .confirm
             ) { [weak self] _ in
                 Task { @MainActor in

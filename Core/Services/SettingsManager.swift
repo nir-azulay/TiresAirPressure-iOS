@@ -98,6 +98,10 @@ class SettingsManager: ObservableObject {
         set { userDefaults.set(!newValue, forKey: Keys.isFirstLaunch) }
     }
 
+    func saveSettings() {
+        saveAllSettings()
+    }
+
     // MARK: - Private
 
     private func setupDefaults() {
