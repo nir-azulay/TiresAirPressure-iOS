@@ -604,7 +604,7 @@ extension BLEManager {
     }
 
     func reorderDevices(_ addressOrder: [String]) {
-        var savedDevices = SavedDevice.load()
+        let savedDevices = SavedDevice.load()
         var reordered: [SavedDevice] = []
         for (index, address) in addressOrder.enumerated() {
             if var device = savedDevices.first(where: { $0.address == address }) {

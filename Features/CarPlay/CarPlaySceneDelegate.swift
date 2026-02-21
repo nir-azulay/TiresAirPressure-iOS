@@ -20,7 +20,8 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
     func templateApplicationScene(
         _ templateApplicationScene: CPTemplateApplicationScene,
-        didDisconnect interfaceController: CPInterfaceController
+        didDisconnect interfaceController: CPInterfaceController,
+        from window: UIWindow
     ) {
         self.interfaceController = nil
     }

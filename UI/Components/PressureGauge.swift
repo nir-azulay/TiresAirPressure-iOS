@@ -26,7 +26,7 @@ struct PressureGauge: View {
             Circle()
                 .stroke(Color.gray.opacity(0.3), lineWidth: lineWidth)
 
-            if let target = targetPressure {
+            if targetPressure != nil {
                 Circle()
                     .trim(from: 0, to: targetProgress)
                     .stroke(

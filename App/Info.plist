@@ -2,125 +2,99 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleDisplayName</key>
-    <string>Tire Pressure Manager</string>
-    <key>CFBundleIdentifier</key>
-    <string>com.nazulay.tirepressuremanager</string>
-    <key>CFBundleInfoDictionaryVersion</key>
-    <string>6.0</string>
-    <key>CFBundleExecutable</key>
-    <string>$(EXECUTABLE_NAME)</string>
-    <key>CFBundleName</key>
-    <string>$(PRODUCT_NAME)</string>
-    <key>CFBundlePackageType</key>
-    <string>APPL</string>
-    <key>CFBundleShortVersionString</key>
-    <string>1.3.0</string>
-    <key>CFBundleVersion</key>
-    <string>556</string>
-    <key>LSRequiresIPhoneOS</key>
-    <true/>
-    <key>UILaunchScreen</key>
-    <dict>
-        <key>UIColorName</key>
-        <string>AccentColor</string>
-        <key>UIImageName</key>
-        <string>LaunchImage</string>
-    </dict>
-    <key>UIRequiredDeviceCapabilities</key>
-    <array>
-        <string>armv7</string>
-        <string>bluetooth-le</string>
-    </array>
-    <key>UISupportedInterfaceOrientations</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-    <key>UISupportedInterfaceOrientations~ipad</key>
-    <array>
-        <string>UIInterfaceOrientationPortrait</string>
-        <string>UIInterfaceOrientationPortraitUpsideDown</string>
-        <string>UIInterfaceOrientationLandscapeLeft</string>
-        <string>UIInterfaceOrientationLandscapeRight</string>
-    </array>
-
-    <!-- Bluetooth Permissions -->
-    <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>This app needs Bluetooth access to communicate with tire pressure monitoring devices.</string>
-    <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>This app needs Bluetooth access to communicate with tire pressure monitoring devices.</string>
-
-    <!-- Location Permission (required for BLE scanning on iOS) -->
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Location permission is required for Bluetooth device scanning to find tire pressure monitoring devices nearby.</string>
-
-    <!-- CarPlay Configuration -->
-    <key>MKDirectionsApplicationSupportedModes</key>
-    <array>
-        <string>MKDirectionsModeCar</string>
-    </array>
-
-    <!-- CarPlay Scene Configuration -->
-    <key>UISceneDelegate</key>
-    <array>
-        <dict>
-            <key>UISceneConfigurationName</key>
-            <string>CarPlay Configuration</string>
-            <key>UISceneDelegateClassName</key>
-            <string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
-            <key>UISceneClassName</key>
-            <string>CPTemplateApplicationScene</string>
-        </dict>
-    </array>
-
-    <!-- App Transport Security -->
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <false/>
-        <key>NSAllowsLocalNetworking</key>
-        <true/>
-    </dict>
-
-    <!-- Supported Languages -->
-    <key>CFBundleLocalizations</key>
-    <array>
-        <string>en</string>
-        <string>he</string>
-    </array>
-
-    <!-- Development Region -->
-    <key>CFBundleDevelopmentRegion</key>
-    <string>en</string>
-
-    <!-- Minimum iOS Version -->
-    <key>MinimumOSVersion</key>
-    <string>15.0</string>
-
-    <!-- App Category -->
-    <key>LSApplicationCategoryType</key>
-    <string>public.app-category.utilities</string>
-
-    <!-- iTunes Artwork -->
-    <key>CFBundleIcons</key>
-    <dict>
-        <key>CFBundlePrimaryIcon</key>
-        <dict>
-            <key>CFBundleIconFiles</key>
-            <array>
-                <string>AppIcon</string>
-            </array>
-            <key>CFBundleIconName</key>
-            <string>AppIcon</string>
-        </dict>
-    </dict>
-
-    <!-- Background Modes -->
-    <key>UIBackgroundModes</key>
-    <array>
-        <string>bluetooth-central</string>
-    </array>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>Tire Pressure Manager</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIcons</key>
+	<dict>
+		<key>CFBundlePrimaryIcon</key>
+		<dict>
+			<key>CFBundleIconFiles</key>
+			<array>
+				<string>AppIcon</string>
+			</array>
+			<key>CFBundleIconName</key>
+			<string>AppIcon</string>
+		</dict>
+	</dict>
+	<key>CFBundleIdentifier</key>
+	<string>com.nazulay.tirepressuremanager</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>he</string>
+	</array>
+	<key>CFBundleName</key>
+	<string>Tire Pressure Manager</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.3.0</string>
+	<key>CFBundleVersion</key>
+	<string>556</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.utilities</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+	<key>MinimumOSVersion</key>
+	<string>16.0</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+	</dict>
+	<key>NSBluetoothAlwaysUsageDescription</key>
+	<string>This app needs Bluetooth access to communicate with tire pressure monitoring devices.</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>This app needs Bluetooth access to communicate with tire pressure monitoring devices.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Location permission is required for Bluetooth device scanning to find tire pressure monitoring devices nearby.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>bluetooth-central</string>
+	</array>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>AccentColor</string>
+		<key>UIImageName</key>
+		<string>LaunchImage</string>
+	</dict>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>armv7</string>
+		<string>bluetooth-le</string>
+	</array>
+	<key>UISceneDelegate</key>
+	<array>
+		<dict>
+			<key>UISceneClassName</key>
+			<string>CPTemplateApplicationScene</string>
+			<key>UISceneConfigurationName</key>
+			<string>CarPlay Configuration</string>
+			<key>UISceneDelegateClassName</key>
+			<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
+		</dict>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
 </dict>
 </plist>
