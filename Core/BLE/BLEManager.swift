@@ -43,6 +43,8 @@ class BLEManager: NSObject, ObservableObject {
 
     private var settingsManager: SettingsManager?
 
+    static let shared = BLEManager()
+
     // MARK: - Initialization
     override init() {
         super.init()

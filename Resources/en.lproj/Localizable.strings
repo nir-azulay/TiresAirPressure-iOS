@@ -143,6 +143,9 @@
 "select_target_pressure" = "Select Target Pressure";
 "connect" = "Connect";
 "auto_pressure_format" = "%.1f PSI";
+"auto_operation_status" = "Status";
+"auto_device" = "Device";
+"auto_choose_pressure" = "Choose target pressure for inflation";
 
 /* Mobile App Specific */
 "psi_unit" = "PSI";

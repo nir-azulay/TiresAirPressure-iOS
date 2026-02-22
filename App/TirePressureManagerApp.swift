@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct TirePressureManagerApp: App {
-    @StateObject private var bleManager = BLEManager()
+    @ObservedObject private var bleManager = BLEManager.shared
     @StateObject private var settingsManager = SettingsManager()
     @ObservedObject private var localizationManager = LocalizationManager.shared
     @State private var showSplash = true

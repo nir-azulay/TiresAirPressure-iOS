@@ -72,17 +72,23 @@
 		<string>armv7</string>
 		<string>bluetooth-le</string>
 	</array>
-	<key>UISceneDelegate</key>
-	<array>
+	<key>UIApplicationSceneManifest</key>
+	<dict>
+		<key>UIApplicationSupportsMultipleScenes</key>
+		<true/>
+		<key>UISceneConfigurations</key>
 		<dict>
-			<key>UISceneClassName</key>
-			<string>CPTemplateApplicationScene</string>
-			<key>UISceneConfigurationName</key>
-			<string>CarPlay Configuration</string>
-			<key>UISceneDelegateClassName</key>
-			<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
+			<key>CPTemplateApplicationSceneSessionRoleApplication</key>
+			<array>
+				<dict>
+					<key>UISceneConfigurationName</key>
+					<string>CarPlay Configuration</string>
+					<key>UISceneDelegateClassName</key>
+					<string>$(PRODUCT_MODULE_NAME).CarPlaySceneDelegate</string>
+				</dict>
+			</array>
 		</dict>
-	</array>
+	</dict>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

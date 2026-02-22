@@ -143,6 +143,9 @@
 "select_target_pressure" = "בחר לחץ יעד";
 "connect" = "התחבר";
 "auto_pressure_format" = "%.1f PSI";
+"auto_operation_status" = "סטטוס";
+"auto_device" = "מכשיר";
+"auto_choose_pressure" = "בחר לחץ יעד לניפוח";
 
 /* Mobile App Specific */
 "psi_unit" = "PSI";
