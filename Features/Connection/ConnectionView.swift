@@ -76,10 +76,10 @@ struct BluetoothStatusCard: View {
 
     private var bluetoothIcon: String {
         switch bleManager.connectionState {
-        case .connected: return "dot.radiowaves.left.and.right.circle.fill"
-        case .scanning: return "dot.radiowaves.left.and.right"
-        case .bluetoothDisabled: return "dot.radiowaves.left.and.right.slash"
-        default: return "dot.radiowaves.left.and.right"
+        case .connected: return "antenna.radiowaves.left.and.right.circle.fill"
+        case .scanning: return "antenna.radiowaves.left.and.right"
+        case .bluetoothDisabled: return "antenna.radiowaves.left.and.right.slash"
+        default: return "antenna.radiowaves.left.and.right"
         }
     }
 

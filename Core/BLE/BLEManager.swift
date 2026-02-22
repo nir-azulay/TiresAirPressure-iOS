@@ -277,10 +277,20 @@ class BLEManager: NSObject, ObservableObject {
         }
     }
 
+    private func sanitizeJSON(_ raw: String) -> String {
+        var s = raw
+        s = s.replacingOccurrences(of: "'", with: "\"")
+        // Add double quotes around unquoted keys: { key: "val" } -> { "key": "val" }
+        let keyPattern = try! NSRegularExpression(pattern: "(?<=\\{|,)\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*:")
+        s = keyPattern.stringByReplacingMatches(in: s, range: NSRange(s.startIndex..., in: s), withTemplate: " \"$1\":")
+        return s
+    }
+
     private func processMessage(_ jsonString: String) {
         print("[BLEManager] Processing message: \(jsonString)")
 
-        guard let data = jsonString.data(using: .utf8),
+        let sanitized = sanitizeJSON(jsonString)
+        guard let data = sanitized.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
             print("[BLEManager] Failed to parse JSON: \(jsonString)")
             return
@@ -431,9 +441,8 @@ extension BLEManager: CBCentralManagerDelegate {
             guard let self = self else { return }
             switch central.state {
             case .poweredOn:
-                if self.connectionState == .bluetoothDisabled {
-                    self.connectionState = .disconnected
-                }
+                self.connectionState = .disconnected
+                self.connectToSavedDevices()
             case .poweredOff, .unauthorized, .unsupported:
                 self.connectionState = .bluetoothDisabled
                 self.disconnect()

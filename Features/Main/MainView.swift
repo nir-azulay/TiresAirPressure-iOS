@@ -78,7 +78,7 @@ struct MainView: View {
                         bleManager.disconnect()
                         showConnection = true
                     } label: {
-                        Image(systemName: "dot.radiowaves.left.and.right.slash")
+                        Image(systemName: "antenna.radiowaves.left.and.right.slash")
                             .foregroundColor(.white)
                     }
                     Button { showAbout = true } label: {
@@ -189,10 +189,10 @@ struct ConnectionStatusCard: View {
 
     private var connectionIcon: String {
         switch bleManager.connectionState {
-        case .connected: return "dot.radiowaves.left.and.right.circle.fill"
+        case .connected: return "antenna.radiowaves.left.and.right.circle.fill"
         case .connecting: return "antenna.radiowaves.left.and.right"
         case .scanning: return "magnifyingglass"
-        case .bluetoothDisabled: return "dot.radiowaves.left.and.right.slash"
+        case .bluetoothDisabled: return "antenna.radiowaves.left.and.right.slash"
         default: return "exclamationmark.triangle"
         }
     }
@@ -448,7 +448,7 @@ struct NotConnectedView: View {
         VStack(spacing: 24) {
             Spacer().frame(height: 60)
 
-            Image(systemName: "dot.radiowaves.left.and.right.slash")
+            Image(systemName: "antenna.radiowaves.left.and.right.slash")
                 .font(.system(size: 80))
                 .foregroundColor(Color.gray.opacity(0.5))
 
@@ -466,7 +466,7 @@ struct NotConnectedView: View {
                 bleManager.connectToSavedDevices()
             } label: {
                 HStack {
-                    Image(systemName: "dot.radiowaves.left.and.right")
+                    Image(systemName: "antenna.radiowaves.left.and.right")
                     Text(NSLocalizedString("scan_devices", comment: ""))
                 }
                 .font(.system(size: 16, weight: .medium))
