@@ -3,7 +3,7 @@ import UIKit
 
 struct AppConstants {
 
-    static let appName = "Tire Pressure Manager"
+    static let appName = "Tires Air Pressure Manager"
     static let developerName = "Nir Azulay"
     static let developerEmail = "nir.azulay@gmail.com"
 

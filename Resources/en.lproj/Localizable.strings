@@ -1,9 +1,11 @@
 /*
   Localizable.strings (English)
   TirePressureManager
+  Synced from Android: app/src/main/res/values/strings.xml
 */
 
 /* General */
+"app_name" = "Tires Air Pressure Manager";
 "settings" = "Settings";
 "back" = "Back";
 "close" = "Close";
@@ -14,7 +16,7 @@
 "scan_devices" = "Scan Devices";
 "stop_scan" = "Stop Scan";
 "scanning" = "Scanning...";
-"available_devices" = "Available Devices";
+"available_devices" = "Available Devices:";
 "not_connected" = "Not Connected to Device";
 "connected" = "Connected";
 "disconnected" = "Disconnected";
@@ -55,7 +57,7 @@
 "app_settings" = "App Settings";
 "device_settings" = "Device Settings";
 
-/* New strings moved from code */
+/* Strings moved from code */
 "search_devices" = "Search Devices";
 "available_devices_count" = "Available Devices (%d)";
 "no_devices_found_message" = "No devices found.\nTap the scan button to search for devices.";
@@ -132,7 +134,7 @@
 "connection_duration_hours" = "Connected for %d hours and %d minutes";
 "permission_denied" = "Permission Required";
 
-/* CarPlay / Android Auto */
+/* CarPlay */
 "auto_current_pressure" = "Current Pressure:";
 "auto_target_pressure" = "Target Pressure:";
 "auto_select_target" = "Select Target Pressure";
@@ -156,7 +158,7 @@
 "connection_error" = "Connection Error";
 
 /* Predefined Pressures */
-"preset_pressures_title" = "Preset Pressures";
+"preset_pressures_title" = "Predefined Pressures";
 "add_pressure" = "Add Pressure";
 "remove_pressure" = "Remove";
 "add_pressure_button" = "Add Pressure";
@@ -196,7 +198,7 @@
 "manage_paired_devices" = "Manage Paired Devices";
 "manage_paired_devices_description" = "Manage your saved Bluetooth devices. The app will try to connect to devices in the order shown below.";
 "no_paired_devices" = "No Paired Devices";
-"no_paired_devices_description" = "Connect to a device first to save it for automatic reconnection.";
+"no_paired_devices_description" = "No devices have been saved yet. Connect to a device to add it to this list.";
 "delete_device" = "Delete Device";
 "delete_device_confirmation" = "Are you sure you want to delete \"%@\" from your paired devices?";
 "cancel" = "Cancel";
@@ -204,3 +206,21 @@
 "move_up" = "Move Up";
 "move_down" = "Move Down";
 "start_pressure" = "Set Pressure";
+
+/* Additional UI strings */
+"connect_to_device_hint" = "Connect to a device to start monitoring tire pressure.";
+"bluetooth_status" = "Bluetooth Status";
+"version" = "Version";
+"connection" = "Connection";
+"system" = "System";
+"configure_device_settings" = "Configure Device Settings";
+"reset_to_defaults" = "Reset to Defaults";
+"reset_defaults_message" = "This will reset all settings to their default values.";
+"enter_pressure_hint" = "Enter a pressure value between 1 and 80 PSI";
+"presets_count" = "Presets: %d/%d";
+"sensor_at_0_psi" = "Sensor at 0 PSI:";
+"sensor_at_50_psi" = "Sensor at 50 PSI:";
+"precision_label" = "Precision:";
+"measure_wait_label" = "Measure Wait:";
+"unsaved_changes_warning" = "You have unsaved changes that will be lost.";
+"saving_restarting" = "Saving & Restarting Device...";

@@ -11,7 +11,7 @@ struct BLEDevice: Identifiable, Equatable {
     var name: String {
         return peripheral.name ??
                advertisementData[CBAdvertisementDataLocalNameKey] as? String ??
-               NSLocalizedString("unknown_device", comment: "Unknown device name")
+               L("unknown_device", comment: "Unknown device name")
     }
 
     var address: String {
@@ -19,7 +19,7 @@ struct BLEDevice: Identifiable, Equatable {
     }
 
     var signalStrengthText: String {
-        return String(format: NSLocalizedString("signal_strength_format", comment: "Signal strength format"), rssi)
+        return String(format: L("signal_strength_format", comment: "Signal strength format"), rssi)
     }
 
     var signalStrength: SignalStrength {
@@ -50,6 +50,6 @@ enum SignalStrength: String, CaseIterable {
     case noSignal = "no_signal"
 
     var displayText: String {
-        return NSLocalizedString(self.rawValue, comment: "Signal strength description")
+        return L(self.rawValue, comment: "Signal strength description")
     }
 }

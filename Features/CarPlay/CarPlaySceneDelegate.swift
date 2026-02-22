@@ -33,7 +33,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
     private func createMainTemplate() -> CPInformationTemplate {
         CPInformationTemplate(
-            title: NSLocalizedString("auto_app_title", comment: "Tire Air Pressure Management"),
+            title: L("auto_app_title", comment: "Tire Air Pressure Management"),
             layout: .leading,
             items: createInformationItems(),
             actions: createMainActions()
@@ -51,7 +51,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
         if let status = bleManager.deviceStatus {
             let pressureItem = CPInformationItem(
-                title: NSLocalizedString("auto_current_pressure", comment: "Current Pressure"),
+                title: L("auto_current_pressure", comment: "Current Pressure"),
                 detail: String(format: "%.1f PSI", status.pressure)
             )
             items.append(pressureItem)
@@ -73,7 +73,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
         if bleManager.connectionState.isConnected {
             let selectTargetAction = CPTextButton(
-                title: NSLocalizedString("auto_select_target", comment: "Select Target Pressure"),
+                title: L("auto_select_target", comment: "Select Target Pressure"),
                 textStyle: .normal
             ) { [weak self] _ in
                 self?.presentTargetSelectionTemplate()
@@ -82,7 +82,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
 
             if let status = bleManager.deviceStatus, status.isOperating {
                 let stopAction = CPTextButton(
-                    title: NSLocalizedString("stop", comment: "Stop"),
+                    title: L("stop", comment: "Stop"),
                     textStyle: .cancel
                 ) { [weak self] _ in
                     Task { @MainActor in
@@ -93,7 +93,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
             }
         } else {
             let connectAction = CPTextButton(
-                title: NSLocalizedString("connect", comment: "Connect"),
+                title: L("connect", comment: "Connect"),
                 textStyle: .confirm
             ) { [weak self] _ in
                 Task { @MainActor in
@@ -109,7 +109,7 @@ class CarPlaySceneDelegate: NSObject, CPTemplateApplicationSceneDelegate {
     private func presentTargetSelectionTemplate() {
         let actions = createTargetPressureActions()
         let actionSheet = CPActionSheetTemplate(
-            title: NSLocalizedString("select_target_pressure", comment: "Select Target Pressure"),
+            title: L("select_target_pressure", comment: "Select Target Pressure"),
             message: "Choose a target pressure",
             actions: actions
         )

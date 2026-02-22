@@ -155,7 +155,7 @@ final class TirePressureManagerUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["About"].exists)
 
         // Test app information elements
-        XCTAssertTrue(app.staticTexts["Tire Pressure Manager"].exists)
+        XCTAssertTrue(app.staticTexts["Tires Air Pressure Manager"].exists)
 
         // Test version information
         let versionText = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Version'")).firstMatch

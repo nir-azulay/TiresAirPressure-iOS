@@ -2,6 +2,10 @@ import Foundation
 import SwiftUI
 import CoreBluetooth
 
+func L(_ key: String, comment: String = "") -> String {
+    LocalizationManager.shared.localizedString(key)
+}
+
 // MARK: - Double Extensions
 extension Double {
     var formattedPressure: String {
@@ -16,11 +20,11 @@ extension Double {
 // MARK: - String Extensions
 extension String {
     var localized: String {
-        NSLocalizedString(self, comment: "")
+        LocalizationManager.shared.localizedString(self)
     }
 
     func localized(_ arguments: CVarArg...) -> String {
-        String(format: NSLocalizedString(self, comment: ""), arguments: arguments)
+        String(format: LocalizationManager.shared.localizedString(self), arguments: arguments)
     }
 }
 

@@ -19,29 +19,29 @@ struct SettingsView: View {
         NavigationView {
             VStack(spacing: 0) {
                 Form {
-                    Section(NSLocalizedString("app_settings", comment: "App Settings")) {
-                        Picker(NSLocalizedString("display_mode", comment: "Display Mode"),
+                    Section(L("app_settings", comment: "App Settings")) {
+                        Picker(L("display_mode", comment: "Display Mode"),
                                selection: $editDisplayMode) {
                             ForEach(DisplayMode.allCases, id: \.self) { mode in
                                 Text(mode.displayText).tag(mode)
                             }
                         }
 
-                        Picker(NSLocalizedString("language", comment: "Language"),
+                        Picker(L("language", comment: "Language"),
                                selection: $editLanguage) {
                             ForEach(AppLanguage.allCases, id: \.self) { lang in
                                 Text(lang.displayText).tag(lang)
                             }
                         }
 
-                        Toggle(NSLocalizedString("debug_mode", comment: "Debug Mode"),
+                        Toggle(L("debug_mode", comment: "Debug Mode"),
                                isOn: $editDebugMode)
 
-                        Toggle(NSLocalizedString("simulation_mode", comment: "Simulation Mode"),
+                        Toggle(L("simulation_mode", comment: "Simulation Mode"),
                                isOn: $editSimulationMode)
                     }
 
-                    Section(NSLocalizedString("preset_pressures_title", comment: "Preset Pressures")) {
+                    Section(L("preset_pressures_title", comment: "Preset Pressures")) {
                         PresetPressuresSection(
                             presetPressures: $editPresetPressures,
                             maxPressureCount: settingsManager.maxPressureCount,
@@ -49,14 +49,14 @@ struct SettingsView: View {
                         )
                     }
 
-                    Section(NSLocalizedString("device_management", comment: "Device Management")) {
+                    Section(L("device_management", comment: "Device Management")) {
                         NavigationLink(destination: DeviceManagementView()) {
                             HStack {
                                 Image(systemName: "externaldrive.connected.to.line.below")
                                     .foregroundColor(AppColors.primary)
                                 VStack(alignment: .leading, spacing: 4) {
-                                    Text(NSLocalizedString("manage_paired_devices", comment: "Manage Paired Devices"))
-                                    Text(NSLocalizedString("manage_paired_devices_description", comment: "Description"))
+                                    Text(L("manage_paired_devices", comment: "Manage Paired Devices"))
+                                    Text(L("manage_paired_devices_description", comment: "Description"))
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -65,12 +65,12 @@ struct SettingsView: View {
                     }
 
                     if bleManager.connectionState.isConnected {
-                        Section(NSLocalizedString("device_settings", comment: "Device Settings")) {
+                        Section(L("device_settings", comment: "Device Settings")) {
                             Button(action: { showingDeviceSettings = true }) {
                                 HStack {
                                     Image(systemName: "gearshape.2")
                                         .foregroundColor(AppColors.primary)
-                                    Text("Configure Device Settings")
+                                    Text(L("configure_device_settings", comment: ""))
                                     Spacer()
                                     Image(systemName: "chevron.right")
                                         .foregroundColor(.secondary)
@@ -82,7 +82,7 @@ struct SettingsView: View {
                                 HStack {
                                     Image(systemName: "arrow.clockwise")
                                         .foregroundColor(AppColors.connectingAmber)
-                                    Text(NSLocalizedString("request_settings", comment: "Request Settings"))
+                                    Text(L("request_settings", comment: "Request Settings"))
                                 }
                             }
                             .foregroundColor(.primary)
@@ -94,7 +94,7 @@ struct SettingsView: View {
                             HStack {
                                 Image(systemName: "arrow.counterclockwise")
                                     .foregroundColor(.red)
-                                Text("Reset to Defaults")
+                                Text(L("reset_to_defaults", comment: ""))
                                     .foregroundColor(.red)
                             }
                         }
@@ -104,7 +104,7 @@ struct SettingsView: View {
                 // Bottom bar with Save and Close/Discard buttons (matching Android)
                 VStack(spacing: 8) {
                     if hasUnsavedChanges {
-                        Text(NSLocalizedString("unsaved_changes_message", comment: ""))
+                        Text(L("unsaved_changes_message", comment: ""))
                             .font(.caption)
                             .foregroundColor(.orange)
                             .multilineTextAlignment(.center)
@@ -113,7 +113,7 @@ struct SettingsView: View {
 
                     HStack(spacing: 12) {
                         Button(action: saveSettings) {
-                            Text(NSLocalizedString("save_settings", comment: "Save Settings"))
+                            Text(L("save_settings", comment: "Save Settings"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -124,8 +124,8 @@ struct SettingsView: View {
 
                         Button(action: closeOrDiscard) {
                             Text(hasUnsavedChanges
-                                 ? NSLocalizedString("discard", comment: "Discard Changes")
-                                 : NSLocalizedString("close", comment: "Close"))
+                                 ? L("discard", comment: "Discard Changes")
+                                 : L("close", comment: "Close"))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -144,7 +144,7 @@ struct SettingsView: View {
                 .padding(.top, 8)
                 .background(Color(UIColor.systemGroupedBackground))
             }
-            .navigationTitle(NSLocalizedString("settings", comment: "Settings"))
+            .navigationTitle(L("settings", comment: "Settings"))
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showingDeviceSettings) {
                 DeviceSettingsView()
@@ -157,7 +157,7 @@ struct SettingsView: View {
                     hasUnsavedChanges = false
                 }
             } message: {
-                Text("This will reset all settings to their default values.")
+                Text(L("reset_defaults_message", comment: ""))
             }
         }
         .onAppear { loadFromSettingsManager() }
@@ -241,7 +241,7 @@ struct PresetPressuresSection: View {
                 HStack {
                     Image(systemName: "plus.circle.fill")
                         .foregroundColor(.green)
-                    Text(NSLocalizedString("add_pressure", comment: "Add Pressure"))
+                    Text(L("add_pressure", comment: "Add Pressure"))
                 }
             }
             .alert("Add Preset Pressure", isPresented: $showingAddPressure) {
@@ -250,11 +250,11 @@ struct PresetPressuresSection: View {
                 Button("Cancel", role: .cancel) { newPressure = "" }
                 Button("Add") { addNewPressure() }
             } message: {
-                Text("Enter a pressure value between 1 and 80 PSI")
+                Text(L("enter_pressure_hint", comment: ""))
             }
         }
 
-        Text("Presets: \(presetPressures.count)/\(maxPressureCount)")
+        Text(String(format: L("presets_count", comment: ""), presetPressures.count, maxPressureCount))
             .font(.caption)
             .foregroundColor(.secondary)
     }
@@ -326,7 +326,7 @@ struct DeviceSettingsView: View {
 
                 Section("Calibration") {
                     HStack {
-                        Text("Sensor at 0 PSI:")
+                        Text(L("sensor_at_0_psi", comment: ""))
                         Spacer()
                         TextField("0.228", text: $sensorValueAt0PSI)
                             .keyboardType(.decimalPad)
@@ -336,7 +336,7 @@ struct DeviceSettingsView: View {
                     }
 
                     HStack {
-                        Text("Sensor at 50 PSI:")
+                        Text(L("sensor_at_50_psi", comment: ""))
                         Spacer()
                         TextField("2.853", text: $sensorValueAt50PSI)
                             .keyboardType(.decimalPad)
@@ -353,7 +353,7 @@ struct DeviceSettingsView: View {
                     .onChange(of: pressureCalcMethod) { _ in hasUnsavedChanges = true }
 
                     HStack {
-                        Text("Precision:")
+                        Text(L("precision_label", comment: ""))
                         Spacer()
                         TextField("1.0", text: $precision)
                             .keyboardType(.decimalPad)
@@ -366,7 +366,7 @@ struct DeviceSettingsView: View {
                         .onChange(of: maxSecForStatus) { _ in hasUnsavedChanges = true }
 
                     HStack {
-                        Text("Measure Wait:")
+                        Text(L("measure_wait_label", comment: ""))
                         Spacer()
                         TextField("2.0", text: $measureWait)
                             .keyboardType(.decimalPad)
@@ -401,7 +401,7 @@ struct DeviceSettingsView: View {
                 Button("Cancel", role: .cancel) { }
                 Button("Discard", role: .destructive) { dismiss() }
             } message: {
-                Text("You have unsaved changes that will be lost.")
+                Text(L("unsaved_changes_warning", comment: ""))
             }
             .overlay {
                 if isSaving {
@@ -411,7 +411,7 @@ struct DeviceSettingsView: View {
                             VStack(spacing: 16) {
                                 ProgressView()
                                     .scaleEffect(1.5)
-                                Text("Saving & Restarting Device...")
+                                Text(L("saving_restarting", comment: ""))
                                     .font(.headline)
                                     .foregroundColor(.white)
                             }

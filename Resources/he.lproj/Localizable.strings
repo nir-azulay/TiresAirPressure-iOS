@@ -1,9 +1,11 @@
 /*
   Localizable.strings (Hebrew)
   TirePressureManager
+  Synced from Android: app/src/main/res/values-iw/strings.xml
 */
 
 /* General */
+"app_name" = "ניהול לחץ אוויר בצמיגים";
 "settings" = "הגדרות";
 "back" = "חזור";
 "close" = "סגור";
@@ -11,35 +13,35 @@
 "message" = "הודעה";
 "start" = "התחל";
 "stop" = "עצור";
-"scan_devices" = "חפש מכשירים";
-"stop_scan" = "עצור חיפוש";
-"scanning" = "מחפש...";
-"available_devices" = "מכשירים זמינים";
+"scan_devices" = "סרוק מכשירים";
+"stop_scan" = "עצור סריקה";
+"scanning" = "סורק...";
+"available_devices" = "מכשירים זמינים:";
 "not_connected" = "לא מחובר למכשיר";
 "connected" = "מחובר";
 "disconnected" = "מנותק";
 "connecting" = "מתחבר...";
-"app_version" = "גרסת האפליקציה";
+"app_version" = "גרסת אפליקציה";
 "version_number" = "1.0.0";
 
 /* Pressure */
 "target_pressure" = "לחץ יעד";
 "pressure_format" = "%.1f PSI";
 "pressure_unit" = "PSI";
-"pressure_reached" = "הגיע ללחץ היעד";
+"pressure_reached" = "לחץ היעד הושג";
 "increase_pressure" = "הגדל לחץ";
-"decrease_pressure" = "הקטן לחץ";
+"decrease_pressure" = "הפחת לחץ";
 "pressure_difference" = "הפרש לחץ:";
 
 /* Permissions */
 "permissions_required" = "נדרשות הרשאות";
-"permissions_explanation" = "האפליקציה זקוקה להרשאות Bluetooth ומיקום כדי לחפש ולהתחבר למכשירים. אנא אשר את כל ההרשאות הנדרשות.";
+"permissions_explanation" = "האפליקציה צריכה הרשאות כדי לסרוק ולהתחבר למכשירי Bluetooth.";
 "bluetooth_permissions_explanation" = "אפליקציה זו זקוקה להרשאות Bluetooth ומיקום כדי למצוא ולהתחבר למכשיר TPMS שלך.";
 "permissions_required_for_scanning" = "ללא הרשאות אלה, האפליקציה לא יכולה לגלות או לתקשר עם מכשירי Bluetooth.";
-"grant_permissions" = "מתן הרשאות";
+"grant_permissions" = "אשר הרשאות";
 "not_now" = "לא עכשיו";
 "open_settings" = "פתח הגדרות";
-"open_settings_permission_explanation" = "האפליקציה זקוקה להרשאות Bluetooth ומיקום כדי לחפש ולהתחבר למכשירים. אנא הפעל את כל ההרשאות הנדרשות בהגדרות.";
+"open_settings_permission_explanation" = "האפליקציה צריכה הרשאות Bluetooth ומיקום כדי לפעול כראוי. אנא פתח את הגדרות האפליקציה ואפשר את ההרשאות הנדרשות.";
 "bluetooth_required" = "נדרש Bluetooth";
 "bluetooth_required_explanation" = "אפליקציה זו דורשת הפעלת Bluetooth. אנא הפעל את ה-Bluetooth כדי להמשיך.";
 
@@ -52,60 +54,60 @@
 "settings_icon" = "הגדרות";
 
 /* Settings */
-"app_settings" = "הגדרות האפליקציה";
-"device_settings" = "הגדרות המכשיר";
+"app_settings" = "הגדרות אפליקציה";
+"device_settings" = "הגדרות מכשיר";
 
-/* New strings moved from code */
+/* Strings moved from code */
 "search_devices" = "חפש מכשירים";
 "available_devices_count" = "מכשירים זמינים (%d)";
-"no_devices_found_message" = "לא נמצאו מכשירים.\nלחץ על כפתור החיפוש כדי לחפש מכשירים.";
-"scan_devices_hint" = "לחץ על 'חפש מכשירים' כדי לחפש.";
+"no_devices_found_message" = "לא נמצאו מכשירים.\nהקש על כפתור הסריקה לחיפוש מכשירים.";
+"scan_devices_hint" = "לחץ על 'סרוק מכשירים' לחיפוש.";
 "unknown_device" = "מכשיר לא ידוע";
 "unknown_device_with_id" = "מכשיר לא ידוע (%1$s)";
 "signal_strength_format" = "עוצמת אות: %1$d dBm";
 "current_pressure" = "לחץ נוכחי";
-"decrease" = "הקטן";
+"decrease" = "הפחת";
 "increase" = "הגדל";
-"preset_pressures" = "לחצים קבועים";
+"preset_pressures" = "לחצים מוגדרים מראש";
 "about" = "אודות";
-"exit_app" = "צא מהאפליקציה";
+"exit_app" = "יציאה מהאפליקציה";
 "back_button" = "חזור";
 "disconnect_device" = "נתק מכשיר";
 "developed_by" = "פותח על ידי";
-"developer_name" = "ניר עזולאי";
+"developer_name" = "ניר אזולאי";
 "developer_email" = "nir.azulay@gmail.com";
-"version_format" = "גרסה 1.2.0";
-"target_reached_title" = "הגיע ללחץ היעד";
-"target_reached_message" = "הגיע בהצלחה ללחץ היעד!";
+"version_format" = "גרסה 1.3.0";
+"target_reached_title" = "לחץ היעד הושג";
+"target_reached_message" = "לחץ היעד הושג בהצלחה!";
 "target_value" = "יעד: %1$.1f PSI";
 "current_value" = "נוכחי: %1$.1f PSI";
 
 /* Settings Screen */
-"device_settings_title" = "הגדרות המכשיר";
-"device_name" = "שם המכשיר";
+"device_settings_title" = "הגדרות מכשיר";
+"device_name" = "שם מכשיר";
 "wifi_settings" = "הגדרות WiFi";
 "scan_networks" = "סרוק רשתות";
-"exit_without_save" = "צא בלי לשמור?";
+"exit_without_save" = "לצאת ללא שמירה?";
 "changes_not_saved" = "השינויים שלך לא יישמרו.";
-"exit_without_saving" = "צא בלי לשמור";
+"exit_without_saving" = "צא ללא שמירה";
 "continue_editing" = "המשך עריכה";
 "discard" = "בטל שינויים";
 "saving_settings" = "שומר הגדרות...";
-"device_will_reset" = "המכשיר יתאפס ויתחבר מחדש אוטומטית";
+"device_will_reset" = "המכשיר יאותחל ויתחבר מחדש אוטומטית";
 "reconnecting_automatically" = "מתחבר מחדש אוטומטית...";
 "returning_to_main_in_seconds" = "חוזר למסך הראשי בעוד %d שניות...";
-"unsaved_changes_message" = "יש לך שינויים לא שמורים שחייבים להישמר כדי להחיל על המכשיר.";
+"unsaved_changes_message" = "יש לך שינויים שלא נשמרו שחייבים להישמר כדי להיות מוחלים על המכשיר.";
 "connection_status" = "סטטוס חיבור: %s";
 "try_reconnect" = "נסה להתחבר מחדש";
 "hardware_settings" = "הגדרות חומרה";
 "calibration_settings" = "הגדרות כיול";
 "simulation_mode" = "מצב סימולציה";
-"enable_simulation_mode" = "הפעל מצב סימולציה";
+"enable_simulation_mode" = "אפשר מצב סימולציה";
 "simulation_mode_description" = "מצב סימולציה מאפשר בדיקת האפליקציה ללא חיבור למכשיר אמיתי";
 "save_settings" = "שמור הגדרות";
 "wifi_password" = "סיסמה";
 "relay_compressor_pin" = "פין ממסר מדחס";
-"relay_free_pin" = "פין ממסר חופשי";
+"relay_free_pin" = "פין ממסר שחרור";
 "sensor_pin" = "פין חיישן";
 "sensor_value_at_0_psi" = "ערך חיישן ב-0 PSI";
 "sensor_value_at_50_psi" = "ערך חיישן ב-50 PSI";
@@ -113,26 +115,26 @@
 "max_sec_for_status" = "זמן מקסימלי לסטטוס (שניות)";
 "measure_wait" = "זמן המתנה למדידה (שניות)";
 "auto_start" = "התחלה אוטומטית";
-"bt_pin_code" = "קוד PIN בלוטוס";
+"bt_pin_code" = "קוד PIN של Bluetooth";
 "ssid" = "SSID";
 "password" = "סיסמה";
 
 /* Additional General Strings */
-"scanning_for_devices" = "מחפש מכשירים...";
-"tap_to_connect" = "לחץ להתחברות";
-"tire_pressure" = "לחץ אוויר בצמיגים";
+"scanning_for_devices" = "סורק מכשירים...";
+"tap_to_connect" = "הקש לחיבור";
+"tire_pressure" = "לחץ צמיגים";
 
 /* About Screen */
 "about_screen_title" = "אודות";
 "app_description" = "אפליקציית ניהול לחץ אוויר בצמיגים";
-"contact_info" = "מידע יצירת קשר";
+"contact_info" = "פרטי יצירת קשר";
 "copyright_notice" = "© %1$s 2024. כל הזכויות שמורות.";
-"connection_duration_seconds" = "מחובר במשך %d שניות";
-"connection_duration_minutes" = "מחובר במשך %d דקות ו-%d שניות";
-"connection_duration_hours" = "מחובר במשך %d שעות ו-%d דקות";
+"connection_duration_seconds" = "מחובר למשך %d שניות";
+"connection_duration_minutes" = "מחובר למשך %d דקות ו-%d שניות";
+"connection_duration_hours" = "מחובר למשך %d שעות ו-%d דקות";
 "permission_denied" = "נדרשת הרשאה";
 
-/* CarPlay / Android Auto */
+/* CarPlay */
 "auto_current_pressure" = "לחץ נוכחי:";
 "auto_target_pressure" = "לחץ יעד:";
 "auto_select_target" = "בחר לחץ יעד";
@@ -146,13 +148,13 @@
 "psi_unit" = "PSI";
 "plus_symbol" = "+";
 "minus_symbol" = "-";
-"connected_duration_seconds" = "מחובר במשך %1$d שניות";
-"connected_duration_minutes" = "מחובר במשך %1$d דקות ו-%2$d שניות";
-"connected_duration_hours" = "מחובר במשך %1$d שעות ו-%2$d דקות";
+"connected_duration_seconds" = "מחובר למשך %1$d שניות";
+"connected_duration_minutes" = "מחובר למשך %1$d דקות ו-%2$d שניות";
+"connected_duration_hours" = "מחובר למשך %1$d שעות ו-%2$d דקות";
 "simple_pressure_format" = "%1$d PSI";
 
 /* Connection states */
-"bluetooth_disabled" = "בלוטוס מבוטל";
+"bluetooth_disabled" = "Bluetooth מושבת";
 "connection_error" = "שגיאת חיבור";
 
 /* Predefined Pressures */
@@ -173,12 +175,12 @@
 
 /* Language */
 "language" = "שפה";
-"language_change_notice" = "שינוי השפה יפעיל מחדש את האפליקציה";
+"language_change_notice" = "שינוי השפה יגרום להפעלה מחדש של האפליקציה";
 
 /* Signal Strength */
-"excellent_signal" = "אות מעולה";
+"excellent_signal" = "אות מצוין";
 "good_signal" = "אות טוב";
-"fair_signal" = "אות בינוני";
+"fair_signal" = "אות סביר";
 "weak_signal" = "אות חלש";
 "no_signal" = "אין אות";
 
@@ -189,18 +191,36 @@
 
 /* Debug Mode */
 "debug_mode" = "מצב דיבוג";
-"current_connection_state" = "מצב החיבור הנוכחי: %1$s";
+"current_connection_state" = "מצב חיבור נוכחי: %1$s";
 
 /* Device Management */
 "device_management" = "ניהול מכשירים";
-"manage_paired_devices" = "נהל מכשירים מזווגים";
-"manage_paired_devices_description" = "נהל את מכשירי הבלוטוס השמורים שלך. האפליקציה תנסה להתחבר למכשירים לפי הסדר המוצג למטה.";
+"manage_paired_devices" = "ניהול מכשירים מזווגים";
+"manage_paired_devices_description" = "נהל את מכשירי הבלוטות' שלך השמורים. האפליקציה תנסה להתחבר למכשירים לפי הסדר המוצג למטה.";
 "no_paired_devices" = "אין מכשירים מזווגים";
-"no_paired_devices_description" = "התחבר למכשיר תחילה כדי לשמור אותו לחיבור אוטומטי.";
+"no_paired_devices_description" = "עדיין לא נשמרו מכשירים. התחבר למכשיר כדי להוסיף אותו לרשימה זו.";
 "delete_device" = "מחק מכשיר";
-"delete_device_confirmation" = "האם אתה בטוח שברצונך למחוק את \"%@\" מהמכשירים המזווגים שלך?";
-"cancel" = "ביטול";
+"delete_device_confirmation" = "האם אתה בטוח שברצונך למחוק את \"%@\" מרשימת המכשירים המזווגים שלך?";
+"cancel" = "בטל";
 "delete" = "מחק";
-"move_up" = "הזז למעלה";
-"move_down" = "הזז למטה";
+"move_up" = "העלה למעלה";
+"move_down" = "הורד למטה";
 "start_pressure" = "קבע לחץ";
+
+/* Additional UI strings */
+"connect_to_device_hint" = "התחבר למכשיר כדי להתחיל לנטר את לחץ הצמיגים.";
+"bluetooth_status" = "סטטוס בלוטוס";
+"version" = "גרסה";
+"connection" = "חיבור";
+"system" = "מערכת";
+"configure_device_settings" = "הגדר את הגדרות המכשיר";
+"reset_to_defaults" = "אפס לברירות מחדל";
+"reset_defaults_message" = "פעולה זו תאפס את כל ההגדרות לערכי ברירת המחדל.";
+"enter_pressure_hint" = "הזן ערך לחץ בין 1 ל-80 PSI";
+"presets_count" = "הגדרות: %d/%d";
+"sensor_at_0_psi" = "חיישן ב-0 PSI:";
+"sensor_at_50_psi" = "חיישן ב-50 PSI:";
+"precision_label" = "דיוק:";
+"measure_wait_label" = "זמן המתנה למדידה:";
+"unsaved_changes_warning" = "יש לך שינויים לא שמורים שיאבדו.";
+"saving_restarting" = "שומר ומפעיל מחדש את המכשיר...";

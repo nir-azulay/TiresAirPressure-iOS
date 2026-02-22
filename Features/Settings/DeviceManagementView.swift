@@ -30,11 +30,11 @@ struct DeviceManagementView: View {
                     .listStyle(PlainListStyle())
                 }
             }
-            .navigationTitle(NSLocalizedString("manage_paired_devices", comment: "Manage Paired Devices"))
+            .navigationTitle(L("manage_paired_devices", comment: "Manage Paired Devices"))
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(NSLocalizedString("back", comment: "Back")) {
+                    Button(L("back", comment: "Back")) {
                         dismiss()
                     }
                 }
@@ -42,17 +42,17 @@ struct DeviceManagementView: View {
             .onAppear {
                 loadSavedDevices()
             }
-            .alert(NSLocalizedString("delete_device", comment: "Delete Device"),
+            .alert(L("delete_device", comment: "Delete Device"),
                    isPresented: $showingDeleteAlert,
                    presenting: deviceToDelete) { device in
-                Button(NSLocalizedString("cancel", comment: "Cancel"), role: .cancel) {
+                Button(L("cancel", comment: "Cancel"), role: .cancel) {
                     deviceToDelete = nil
                 }
-                Button(NSLocalizedString("delete", comment: "Delete"), role: .destructive) {
+                Button(L("delete", comment: "Delete"), role: .destructive) {
                     deleteDevice(device)
                 }
             } message: { device in
-                Text(String(format: NSLocalizedString("delete_device_confirmation", comment: "Delete device confirmation"), device.name))
+                Text(String(format: L("delete_device_confirmation", comment: "Delete device confirmation"), device.name))
             }
         }
     }
@@ -109,12 +109,12 @@ struct EmptyDevicesView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.secondary)
 
-            Text(NSLocalizedString("no_paired_devices", comment: "No Paired Devices"))
+            Text(L("no_paired_devices", comment: "No Paired Devices"))
                 .font(.title2)
                 .fontWeight(.medium)
                 .foregroundColor(.primary)
 
-            Text(NSLocalizedString("no_paired_devices_description", comment: "No paired devices description"))
+            Text(L("no_paired_devices_description", comment: "No paired devices description"))
                 .font(.body)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

@@ -17,25 +17,28 @@ struct ConnectionView: View {
                 }
                 .padding()
             }
-            .navigationTitle(NSLocalizedString("scan_devices", comment: "Scan Devices"))
+            .navigationTitle(L("scan_devices", comment: "Scan Devices"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("close", comment: "Close")) {
+                    Button(L("close", comment: "Close")) {
                         dismiss()
                     }
                 }
             }
-            .alert(NSLocalizedString("bluetooth_required", comment: "Bluetooth Required"),
+            .alert(L("bluetooth_required", comment: "Bluetooth Required"),
                    isPresented: $showingPermissionAlert) {
                 Button("OK") { }
             } message: {
-                Text(NSLocalizedString("bluetooth_required_explanation", comment: "Bluetooth is required"))
+                Text(L("bluetooth_required_explanation", comment: "Bluetooth is required"))
             }
         }
         .onChange(of: bleManager.connectionState) { state in
             if state == .bluetoothDisabled {
                 showingPermissionAlert = true
+            }
+            if state == .connected {
+                dismiss()
             }
         }
     }
@@ -52,7 +55,7 @@ struct BluetoothStatusCard: View {
                 .foregroundColor(bluetoothColor)
 
             VStack(alignment: .leading) {
-                Text("Bluetooth Status")
+                Text(L("bluetooth_status", comment: ""))
                     .font(.headline)
                 Text(bleManager.connectionState.displayText)
                     .font(.subheadline)
@@ -62,7 +65,7 @@ struct BluetoothStatusCard: View {
             Spacer()
 
             if bleManager.connectionState.isConnected {
-                Button(NSLocalizedString("disconnect_device", comment: "Disconnect")) {
+                Button(L("disconnect_device", comment: "Disconnect")) {
                     bleManager.disconnect()
                 }
                 .font(.caption)
@@ -104,10 +107,10 @@ struct ScanControlCard: View {
                     ProgressView()
                         .scaleEffect(1.2)
 
-                    Text(NSLocalizedString("scanning", comment: "Scanning"))
+                    Text(L("scanning", comment: "Scanning"))
                         .font(.headline)
 
-                    Button(NSLocalizedString("stop_scan", comment: "Stop Scan")) {
+                    Button(L("stop_scan", comment: "Stop Scan")) {
                         bleManager.stopScanning()
                     }
                     .font(.title2)
@@ -118,7 +121,7 @@ struct ScanControlCard: View {
                     .cornerRadius(12)
                 }
             } else {
-                Button(NSLocalizedString("scan_devices", comment: "Scan Devices")) {
+                Button(L("scan_devices", comment: "Scan Devices")) {
                     bleManager.startScanning()
                 }
                 .font(.title2.weight(.medium))
@@ -144,7 +147,7 @@ struct DeviceListSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(NSLocalizedString("available_devices", comment: "Available Devices"))
+                Text(L("available_devices", comment: "Available Devices"))
                     .font(.headline)
                 Spacer()
                 Text("(\(bleManager.discoveredDevices.count))")
@@ -279,9 +282,9 @@ struct EmptyDeviceListView: View {
 
     private var emptyStateText: String {
         if bleManager.isScanning {
-            return NSLocalizedString("scanning_for_devices", comment: "Scanning for devices...")
+            return L("scanning_for_devices", comment: "Scanning for devices...")
         } else {
-            return NSLocalizedString("no_devices_found_message", comment: "No devices found")
+            return L("no_devices_found_message", comment: "No devices found")
         }
     }
 }

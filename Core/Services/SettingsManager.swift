@@ -29,6 +29,7 @@ class SettingsManager: ObservableObject {
     init() {
         loadSettings()
         setupDefaults()
+        LocalizationManager.shared.applyLanguage(language)
     }
 
     // MARK: - Preset Pressures
@@ -144,6 +145,7 @@ class SettingsManager: ObservableObject {
     private func saveAllSettings() {
         userDefaults.set(displayMode.rawValue, forKey: Keys.displayMode)
         userDefaults.set(language.rawValue, forKey: Keys.language)
+        LocalizationManager.shared.applyLanguage(language)
         userDefaults.set(simulationMode, forKey: Keys.simulationMode)
         userDefaults.set(debugMode, forKey: Keys.debugMode)
         userDefaults.set(minPressureCount, forKey: Keys.minPressureCount)
@@ -167,9 +169,9 @@ enum DisplayMode: String, CaseIterable {
 
     var displayText: String {
         switch self {
-        case .system: return NSLocalizedString("system_default", comment: "System Default")
-        case .light: return NSLocalizedString("light_mode", comment: "Light Mode")
-        case .dark: return NSLocalizedString("dark_mode", comment: "Dark Mode")
+        case .system: return L("system_default", comment: "System Default")
+        case .light: return L("light_mode", comment: "Light Mode")
+        case .dark: return L("dark_mode", comment: "Dark Mode")
         }
     }
 
@@ -190,7 +192,7 @@ enum AppLanguage: String, CaseIterable {
 
     var displayText: String {
         switch self {
-        case .system: return NSLocalizedString("system_default", comment: "System Default")
+        case .system: return LocalizationManager.shared.localizedString("system_default")
         case .english: return "English"
         case .hebrew: return "עברית"
         }
@@ -202,5 +204,51 @@ enum AppLanguage: String, CaseIterable {
         case .english: return "en"
         case .hebrew: return "he"
         }
+    }
+
+    var languageCode: String? {
+        switch self {
+        case .system: return nil
+        case .english: return "en"
+        case .hebrew: return "he"
+        }
+    }
+}
+
+// MARK: - Localization Manager
+final class LocalizationManager: ObservableObject {
+    static let shared = LocalizationManager()
+
+    @Published var bundle: Bundle = .main
+    @Published var refreshId: UUID = UUID()
+
+    private init() {
+        if let saved = UserDefaults.standard.string(forKey: "language"),
+           let lang = AppLanguage(rawValue: saved) {
+            applyLanguage(lang)
+        }
+    }
+
+    func applyLanguage(_ language: AppLanguage) {
+        guard let code = language.languageCode else {
+            bundle = .main
+            UserDefaults.standard.removeObject(forKey: "AppleLanguages")
+            refreshId = UUID()
+            return
+        }
+
+        if let path = Bundle.main.path(forResource: code, ofType: "lproj"),
+           let langBundle = Bundle(path: path) {
+            bundle = langBundle
+        } else {
+            bundle = .main
+        }
+
+        UserDefaults.standard.set([code], forKey: "AppleLanguages")
+        refreshId = UUID()
+    }
+
+    func localizedString(_ key: String) -> String {
+        bundle.localizedString(forKey: key, value: nil, table: nil)
     }
 }

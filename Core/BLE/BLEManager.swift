@@ -300,6 +300,7 @@ class BLEManager: NSObject, ObservableObject {
             let targetPressure = parseDouble(json["targetPressure"]) ?? 0
             let currentPressure = parseDouble(json["currentPressure"]) ?? 0
             print("[BLEManager] Target reached: target=\(targetPressure), current=\(currentPressure)")
+            SoundManager.shared.playTargetReachedSound()
             targetReachedSubject.send((target: targetPressure, current: currentPressure))
             return
         }
@@ -480,6 +481,7 @@ extension BLEManager: CBCentralManagerDelegate {
 
             self.connectionState = .connected
             self.connectedDeviceName = peripheral.name ?? "Unknown Device"
+            SoundManager.shared.playConnectionSound()
 
             if let device = self.discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
                 self.saveDevice(device)

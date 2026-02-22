@@ -15,17 +15,17 @@ enum ConnectionState: Equatable {
     var displayText: String {
         switch self {
         case .disconnected:
-            return NSLocalizedString("disconnected", comment: "Disconnected")
+            return L("disconnected", comment: "Disconnected")
         case .scanning:
-            return NSLocalizedString("scanning", comment: "Scanning")
+            return L("scanning", comment: "Scanning")
         case .connecting:
-            return NSLocalizedString("connecting", comment: "Connecting")
+            return L("connecting", comment: "Connecting")
         case .connected:
-            return NSLocalizedString("connected", comment: "Connected")
+            return L("connected", comment: "Connected")
         case .bluetoothDisabled:
-            return NSLocalizedString("bluetooth_disabled", comment: "Bluetooth Disabled")
+            return L("bluetooth_disabled", comment: "Bluetooth Disabled")
         case .connectionError:
-            return NSLocalizedString("connection_error", comment: "Connection Error")
+            return L("connection_error", comment: "Connection Error")
         }
     }
 }

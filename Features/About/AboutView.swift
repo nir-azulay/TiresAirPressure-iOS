@@ -14,24 +14,17 @@ struct AboutView: View {
                     VStack(spacing: 16) {
                         // App Header Card
                         VStack(spacing: 16) {
-                            RoundedRectangle(cornerRadius: 60)
-                                .fill(LinearGradient(
-                                    colors: [AppColors.primary, AppColors.tertiary],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ))
+                            Image("ProfileNir")
+                                .resizable()
+                                .aspectRatio(contentMode: .fill)
                                 .frame(width: 120, height: 120)
-                                .overlay {
-                                    Image(systemName: "gauge")
-                                        .font(.system(size: 48))
-                                        .foregroundColor(.white)
-                                }
+                                .clipShape(Circle())
 
-                            Text("Tire Pressure Manager")
+                            Text(L("app_name", comment: ""))
                                 .font(.system(size: 24, weight: .bold))
                                 .foregroundColor(.white)
 
-                            Text(NSLocalizedString("app_description", comment: ""))
+                            Text(L("app_description", comment: ""))
                                 .font(.system(size: 16))
                                 .foregroundColor(.white.opacity(0.7))
                                 .multilineTextAlignment(.center)
@@ -43,7 +36,7 @@ struct AboutView: View {
 
                         // Version Info Card
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Version")
+                            Text(L("version", comment: ""))
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.white)
 
@@ -58,7 +51,7 @@ struct AboutView: View {
 
                         // Contact Info Card
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(NSLocalizedString("contact_info", comment: ""))
+                            Text(L("contact_info", comment: ""))
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.white)
 
@@ -92,7 +85,7 @@ struct AboutView: View {
                         // Connection Info Card
                         if bleManager.connectionState.isConnected {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Connection")
+                                Text(L("connection", comment: ""))
                                     .font(.system(size: 18, weight: .bold))
                                     .foregroundColor(.white)
 
@@ -108,7 +101,7 @@ struct AboutView: View {
 
                         // System Info Card
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("System")
+                            Text(L("system", comment: ""))
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.white)
 
@@ -135,11 +128,11 @@ struct AboutView: View {
                     .padding(.top, 8)
                 }
             }
-            .navigationTitle(NSLocalizedString("about", comment: "About"))
+            .navigationTitle(L("about", comment: "About"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(NSLocalizedString("close", comment: "Close")) {
+                    Button(L("close", comment: "Close")) {
                         dismiss()
                     }
                 }

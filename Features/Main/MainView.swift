@@ -53,7 +53,7 @@ struct MainView: View {
                                 targetPressure: targetPressure
                             )
                         } else {
-                            NotConnectedView()
+                            NotConnectedView(showConnection: $showConnection)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -64,7 +64,7 @@ struct MainView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text("Tire Pressure Manager")
+                    Text(L("app_name", comment: ""))
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.white)
                 }
@@ -134,14 +134,14 @@ struct MainView: View {
             }
         }
         .alert(
-            NSLocalizedString("target_reached_title", comment: ""),
+            L("target_reached_title", comment: ""),
             isPresented: $showTargetReachedAlert
         ) {
             Button("OK") { }
         } message: {
             if let info = targetReachedInfo {
                 Text("""
-                \(NSLocalizedString("target_reached_message", comment: ""))
+                \(L("target_reached_message", comment: ""))
                 Target: \(String(format: "%.1f", info.target)) PSI
                 Current: \(String(format: "%.1f", info.current)) PSI
                 """)
@@ -219,7 +219,7 @@ struct PressureGaugeCard: View {
         HStack(spacing: 0) {
             // Left side - Current Pressure text
             VStack(spacing: 4) {
-                Text(NSLocalizedString("current_pressure", comment: ""))
+                Text(L("current_pressure", comment: ""))
                     .font(.system(size: 16, weight: .regular))
                     .foregroundColor(.white)
 
@@ -295,7 +295,7 @@ struct TargetPressureCard: View {
 
     var body: some View {
         VStack(spacing: 8) {
-            Text(NSLocalizedString("target_pressure", comment: ""))
+            Text(L("target_pressure", comment: ""))
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
 
@@ -392,8 +392,8 @@ struct InflationControlButton: View {
                 Image(systemName: isInflating ? "stop.fill" : "play.fill")
                     .font(.system(size: 20))
                 Text(isInflating
-                     ? NSLocalizedString("stop", comment: "")
-                     : NSLocalizedString("start", comment: ""))
+                     ? L("stop", comment: "")
+                     : L("start", comment: ""))
                     .font(.system(size: 16, weight: .bold))
             }
             .foregroundColor(.white)
@@ -428,8 +428,8 @@ struct InflationStatusIndicator: View {
                     .onDisappear { dotScale = 0.8 }
 
                 Text(currentPressure > targetPressure
-                     ? NSLocalizedString("mode_deflating", comment: "")
-                     : NSLocalizedString("mode_inflating", comment: ""))
+                     ? L("mode_deflating", comment: "")
+                     : L("mode_inflating", comment: ""))
                     .font(.system(size: 16, weight: .bold))
                     .foregroundColor(AppColors.errorRed)
                 Spacer()
@@ -443,6 +443,7 @@ struct InflationStatusIndicator: View {
 // MARK: - Not Connected View
 struct NotConnectedView: View {
     @EnvironmentObject var bleManager: BLEManager
+    @Binding var showConnection: Bool
 
     var body: some View {
         VStack(spacing: 24) {
@@ -452,22 +453,23 @@ struct NotConnectedView: View {
                 .font(.system(size: 80))
                 .foregroundColor(Color.gray.opacity(0.5))
 
-            Text(NSLocalizedString("not_connected", comment: ""))
+            Text(L("not_connected", comment: ""))
                 .font(.system(size: 22, weight: .medium))
                 .foregroundColor(.gray)
 
-            Text("Connect to a device to start monitoring tire pressure.")
+            Text(L("connect_to_device_hint", comment: ""))
                 .font(.system(size: 14))
                 .foregroundColor(.gray)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
             Button {
-                bleManager.connectToSavedDevices()
+                bleManager.startScanning()
+                showConnection = true
             } label: {
                 HStack {
                     Image(systemName: "antenna.radiowaves.left.and.right")
-                    Text(NSLocalizedString("scan_devices", comment: ""))
+                    Text(L("scan_devices", comment: ""))
                 }
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.white)

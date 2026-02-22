@@ -21,9 +21,9 @@ struct DeviceStatus: Equatable {
     var operationModeText: String {
         switch operationMode {
         case DeviceStatus.modeInflate:
-            return NSLocalizedString("mode_inflating", comment: "Inflating")
+            return L("mode_inflating", comment: "Inflating")
         case DeviceStatus.modeDeflate:
-            return NSLocalizedString("mode_deflating", comment: "Deflating")
+            return L("mode_deflating", comment: "Deflating")
         default:
             return ""
         }

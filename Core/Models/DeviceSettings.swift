@@ -78,9 +78,9 @@ enum PressureCalcMethod: Int, CaseIterable {
     var displayText: String {
         switch self {
         case .adcCalibration:
-            return NSLocalizedString("adc_calibration", comment: "ADC Calibration")
+            return L("adc_calibration", comment: "ADC Calibration")
         case .voltageCalibration:
-            return NSLocalizedString("voltage_calibration", comment: "Voltage Calibration")
+            return L("voltage_calibration", comment: "Voltage Calibration")
         }
     }
 }
