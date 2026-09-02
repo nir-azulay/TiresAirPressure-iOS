@@ -561,6 +561,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Tires Air Pressure Manager";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app needs Bluetooth access to communicate with tire pressure monitoring devices.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location permission is required for Bluetooth device scanning to find tire pressure monitoring devices nearby.";
@@ -600,6 +601,7 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = App/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Tires Air Pressure Manager";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSBluetoothAlwaysUsageDescription = "This app needs Bluetooth access to communicate with tire pressure monitoring devices.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Location permission is required for Bluetooth device scanning to find tire pressure monitoring devices nearby.";
