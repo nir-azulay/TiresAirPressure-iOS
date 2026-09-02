@@ -1,0 +1,62 @@
+default_platform(:ios)
+
+XCODEPROJ  = "TirePressureManager.xcodeproj".freeze
+SCHEME     = "TirePressureManager".freeze
+INFO_PLIST = "App/Info.plist".freeze
+OUTPUT_DIR = "build".freeze
+IPA_NAME   = "TirePressureManager.ipa".freeze
+KEYCHAIN   = "fastlane_tmp_keychain".freeze
+
+platform :ios do
+  desc "Build the Release configuration and upload it to TestFlight"
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch("ASC_KEY_ID"),
+      issuer_id: ENV.fetch("ASC_ISSUER_ID"),
+      key_content: ENV.fetch("ASC_KEY_P8_BASE64"),
+      is_key_content_base64: true
+    )
+
+    if is_ci
+      # Builds into a throwaway keychain so the runner never keeps signing material.
+      setup_ci(keychain_name: KEYCHAIN)
+
+      import_certificate(
+        certificate_path: ENV.fetch("IOS_DIST_CERT_P12_PATH"),
+        certificate_password: ENV.fetch("IOS_DIST_CERT_PASSWORD"),
+        keychain_name: KEYCHAIN,
+        keychain_password: ""
+      )
+    end
+
+    # The target sets GENERATE_INFOPLIST_FILE = NO, so CFBundleVersion is taken
+    # verbatim from Info.plist rather than from CURRENT_PROJECT_VERSION.
+    build_number = ENV.fetch("BUILD_NUMBER")
+    set_info_plist_value(path: INFO_PLIST, key: "CFBundleVersion", value: build_number)
+    UI.message("Building #{get_info_plist_value(path: INFO_PLIST, key: 'CFBundleShortVersionString')} (#{build_number})")
+
+    build_app(
+      project: XCODEPROJ,
+      scheme: SCHEME,
+      configuration: "Release",
+      export_method: "app-store",
+      output_directory: OUTPUT_DIR,
+      output_name: IPA_NAME,
+      clean: true,
+      api_key: api_key,
+      xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        signingStyle: "automatic",
+        teamID: CredentialsManager::AppfileConfig.try_fetch_value(:team_id),
+        manageAppVersionAndBuildNumber: false
+      }
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      ipa: File.join(OUTPUT_DIR, IPA_NAME),
+      distribute_external: false,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
