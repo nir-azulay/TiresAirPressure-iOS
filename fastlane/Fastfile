@@ -64,7 +64,6 @@ platform :ios do
       output_name: IPA_NAME,
       clean: true,
       xcargs: auth_args,
-      export_xcargs: auth_args,
       export_options: {
         signingStyle: "automatic",
         teamID: CredentialsManager::AppfileConfig.try_fetch_value(:team_id),
