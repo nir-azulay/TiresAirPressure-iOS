@@ -4,6 +4,7 @@ default_platform(:ios)
 
 XCODEPROJ  = "TirePressureManager.xcodeproj".freeze
 SCHEME     = "TirePressureManager".freeze
+BUNDLE_ID  = "com.nazulay.tirepressuremanager".freeze
 INFO_PLIST = "App/Info.plist".freeze
 OUTPUT_DIR = "build".freeze
 IPA_NAME   = "TirePressureManager.ipa".freeze
@@ -43,16 +44,25 @@ platform :ios do
     end
 
     # Fetch/download the App Store provisioning profile using App Store Connect API
-    get_provisioning_profile(
+    profile = get_provisioning_profile(
       api_key: api_key,
-      app_identifier: "com.nazulay.tirepressuremanager"
+      app_identifier: BUNDLE_ID
     )
+
+    profile_name = ENV["SIGH_NAME"] || profile || "#{BUNDLE_ID} AppStore"
 
     # The target sets GENERATE_INFOPLIST_FILE = NO, so CFBundleVersion is taken
     # verbatim from Info.plist rather than from CURRENT_PROJECT_VERSION.
     build_number = ENV.fetch("BUILD_NUMBER")
     set_info_plist_value(path: INFO_PLIST, key: "CFBundleVersion", value: build_number)
     UI.message("Building #{get_info_plist_value(path: INFO_PLIST, key: 'CFBundleShortVersionString')} (#{build_number})")
+
+    resolved_key_path = key_path || (api_key && (api_key[:filepath] || api_key[:key_filepath]))
+    auth_args = if resolved_key_path && File.exist?(resolved_key_path)
+      "-allowProvisioningUpdates -authenticationKeyPath '#{resolved_key_path}' -authenticationKeyID '#{ENV.fetch("ASC_KEY_ID")}' -authenticationKeyIssuerID '#{ENV.fetch("ASC_ISSUER_ID")}'"
+    else
+      "-allowProvisioningUpdates"
+    end
 
     build_app(
       project: XCODEPROJ,
@@ -62,7 +72,11 @@ platform :ios do
       output_directory: OUTPUT_DIR,
       output_name: IPA_NAME,
       clean: true,
+      xcargs: auth_args,
       export_options: {
+        provisioningProfiles: {
+          BUNDLE_ID => profile_name
+        },
         manageAppVersionAndBuildNumber: false
       }
     )
