@@ -1,7 +1,9 @@
 import SwiftUI
+import UIKit
 import Combine
 
 struct MainView: View {
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var settingsManager: SettingsManager
     @State private var targetPressure: Double = 30.0
@@ -133,6 +135,17 @@ struct MainView: View {
                 isInflating = false
             }
         }
+        .onChange(of: isInflating) { inflating in
+            setKeepScreenOn(inflating)
+        }
+        .onChange(of: scenePhase) { phase in
+            if phase == .active {
+                setKeepScreenOn(isInflating)
+            }
+        }
+        .onDisappear {
+            setKeepScreenOn(false)
+        }
         .alert(
             L("target_reached_title", comment: ""),
             isPresented: $showTargetReachedAlert
@@ -157,6 +170,11 @@ struct MainView: View {
             bleManager.startInflation(targetPressure: targetPressure)
             isInflating = true
         }
+    }
+
+    /// Prevents auto-lock while the compressor is inflating or deflating.
+    private func setKeepScreenOn(_ keepOn: Bool) {
+        UIApplication.shared.isIdleTimerDisabled = keepOn
     }
 }
 
