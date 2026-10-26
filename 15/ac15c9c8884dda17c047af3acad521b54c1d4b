@@ -1,0 +1,24 @@
+.github/workflows/ios-testflight.yml
+  s_a78bf3d6b9a4f7::t_ff20c25c7907c5 42,64
+  s_a78bf3d6b9a4f7::t_0b3622da99d99f 39-41
+  s_a78bf3d6b9a4f7::t_18bcd4b130ed17 43-45,61-63
+  s_a78bf3d6b9a4f7::t_739ad20dbb4ff0 65-67
+docs/ios-testflight-ci.md
+  s_a78bf3d6b9a4f7::t_e82e27315b4d35 1-105
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "15ac15c9c8884dda17c047af3acad521b54c1d4b",
+  "prompts": {},
+  "sessions": {
+    "s_a78bf3d6b9a4f7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "71cf080a-c3c3-429c-bb57-cf6aae336486",
+        "model": "grok-4.7"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
