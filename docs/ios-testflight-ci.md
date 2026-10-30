@@ -64,8 +64,8 @@ Keychain Access and on the Apple Developer certificates page.
 `App/Info.plist` sets `CFBundleVersion` literally (the target has
 `GENERATE_INFOPLIST_FILE = NO`), so the lane patches that file during the build.
 The value is `BUILD_NUMBER_BASE + GITHUB_RUN_NUMBER`, where `BUILD_NUMBER_BASE` is
-defined at the top of the workflow and currently equals `557`. The next automated
-run uploads `557` plus the workflow run number.
+defined at the top of the workflow and currently equals `568`. The next automated
+run uploads build `569` of version `2.0.0`.
 
 The patched `Info.plist` is not committed back, so the file in git stays at 557.
 

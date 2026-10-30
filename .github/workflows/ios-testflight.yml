@@ -13,7 +13,7 @@ concurrency:
 env:
   # Build numbers are BUILD_NUMBER_BASE + the workflow run number. Raise the base
   # if you ever upload a higher build to TestFlight by hand.
-  BUILD_NUMBER_BASE: "557"
+  BUILD_NUMBER_BASE: "568"
 
 jobs:
   testflight:
