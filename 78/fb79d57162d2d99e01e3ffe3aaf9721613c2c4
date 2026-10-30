@@ -1,0 +1,25 @@
+docs/ios-testflight-ci.md
+  s_8a297305c5de68::t_e7a1298c062d84 67-68
+TirePressureManager.xcodeproj/project.pbxproj
+  s_8a297305c5de68::t_0717cd6d979b7a 578,618
+App/Info.plist
+  s_8a297305c5de68::t_a7d3dc1d9ca913 37
+.github/workflows/ios-testflight.yml
+  s_8a297305c5de68::t_b2b8d95a73fffb 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "78fb79d57162d2d99e01e3ffe3aaf9721613c2c4",
+  "prompts": {},
+  "sessions": {
+    "s_8a297305c5de68": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "66286c43-ccd4-44ad-8e32-9f73f2cf029a",
+        "model": "grok-4.7"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
