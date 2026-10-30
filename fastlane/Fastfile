@@ -57,12 +57,28 @@ platform :ios do
     set_info_plist_value(path: INFO_PLIST, key: "CFBundleVersion", value: build_number)
     UI.message("Building #{get_info_plist_value(path: INFO_PLIST, key: 'CFBundleShortVersionString')} (#{build_number})")
 
-    resolved_key_path = key_path || (api_key && (api_key[:filepath] || api_key[:key_filepath]))
-    auth_args = if resolved_key_path && File.exist?(resolved_key_path)
-      "-allowProvisioningUpdates -authenticationKeyPath '#{resolved_key_path}' -authenticationKeyID '#{ENV.fetch("ASC_KEY_ID")}' -authenticationKeyIssuerID '#{ENV.fetch("ASC_ISSUER_ID")}'"
-    else
-      "-allowProvisioningUpdates"
+    # Automatic signing asks Apple to create a development certificate. The account
+    # is already at the certificate limit, and CI already imported the distribution
+    # certificate plus the App Store profile.
+    if is_ci
+      update_code_signing_settings(
+        use_automatic_signing: false,
+        path: XCODEPROJ,
+        team_id: "6VD7L6T443",
+        code_sign_identity: "Apple Distribution",
+        profile_name: profile_name,
+        targets: ["TirePressureManager"],
+        build_configurations: ["Release"]
+      )
     end
+
+    export_options = {
+      provisioningProfiles: {
+        BUNDLE_ID => profile_name
+      },
+      manageAppVersionAndBuildNumber: false
+    }
+    export_options[:signingStyle] = "manual" if is_ci
 
     build_app(
       project: XCODEPROJ,
@@ -72,13 +88,8 @@ platform :ios do
       output_directory: OUTPUT_DIR,
       output_name: IPA_NAME,
       clean: true,
-      xcargs: auth_args,
-      export_options: {
-        provisioningProfiles: {
-          BUNDLE_ID => profile_name
-        },
-        manageAppVersionAndBuildNumber: false
-      }
+      codesigning_identity: ("Apple Distribution" if is_ci),
+      export_options: export_options
     )
 
     upload_to_testflight(
