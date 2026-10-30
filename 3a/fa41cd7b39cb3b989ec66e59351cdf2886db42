@@ -1,0 +1,41 @@
+Core/Models/SavedDevice.swift
+  s_8a297305c5de68::t_5d3faad6604cd4 47
+  s_8a297305c5de68::t_8c4369d86ae19e 10,12,18-38
+Core/Models/BLECommand.swift
+  s_8a297305c5de68::t_73960284931a69 27
+  s_8a297305c5de68::t_dcee083edf5539 99-105
+  s_8a297305c5de68::t_a595b7c7bf5dcb 36
+Core/BLE/BLEManager.swift
+  s_8a297305c5de68::t_e77273f93e2831 146
+  s_8a297305c5de68::t_17f05bddc1abfb 665-671
+  s_8a297305c5de68::t_ead6ae36ec20f7 227-242
+  s_8a297305c5de68::t_5ac598ff073ce5 186-190
+  s_8a297305c5de68::t_2567127523c03e 14
+  s_8a297305c5de68::t_c903a0ceec2282 323-334
+  s_8a297305c5de68::t_189b1351d583b0 580
+Features/Main/MainView.swift
+  s_8a297305c5de68::t_ebac67599e5e98 151,156-165
+  s_8a297305c5de68::t_32cef9404ee814 19
+  s_8a297305c5de68::t_55ae87836d2ce6 152-155
+  s_8a297305c5de68::t_5a7fff8a69d9f3 150
+Resources/he.lproj/Localizable.strings
+  s_8a297305c5de68::t_4319593e96ad7b 118-119
+Resources/en.lproj/Localizable.strings
+  s_8a297305c5de68::t_07681f7fe6409b 118-119
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "3afa41cd7b39cb3b989ec66e59351cdf2886db42",
+  "prompts": {},
+  "sessions": {
+    "s_8a297305c5de68": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "66286c43-ccd4-44ad-8e32-9f73f2cf029a",
+        "model": "grok-4.7"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
