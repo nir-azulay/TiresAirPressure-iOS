@@ -13,7 +13,6 @@ struct DeviceSettings: Equatable {
     var sensorValueAt50PSI: Double = 2.853
     var measureWait: Double = 2.0
     var precision: Double = 1.0
-    var btPinCode: String = "1234"
     var currentPressure: Double = 0.0
     var softwareVersion: String = ""
     var ipAddress: String = ""
@@ -34,7 +33,6 @@ struct DeviceSettings: Equatable {
         s.sensorValueAt50PSI = doubleValue(json["SensorValueAt50PSI"]) ?? 2.853
         s.measureWait = doubleValue(json["MessureWait"]) ?? 2.0
         s.precision = doubleValue(json["Precision"]) ?? 1.0
-        s.btPinCode = stringValue(json["BTPinCode"]) ?? "1234"
         s.currentPressure = doubleValue(json["CurrentPressure"]) ?? 0.0
         s.softwareVersion = stringValue(json["Software_VER"]) ?? ""
         s.ipAddress = stringValue(json["IP"]) ?? ""

@@ -24,6 +24,7 @@ enum BLECommand {
     case requestSettings
     case requestStatus
     case debugMode(enabled: Bool)
+    case authenticate(accessCode: String)
 
     static let cmdStop = 1
     static let cmdStart = 2
@@ -32,6 +33,7 @@ enum BLECommand {
     static let cmdLogLevel = 5
     static let cmdGetSettings = 6
     static let cmdRequestStatus = 7
+    static let cmdAuthenticate = 8
 
     func toJSONData() -> Data? {
         var dict: [String: Any]
@@ -64,7 +66,6 @@ enum BLECommand {
                 "SensorValueAt50PSI": Double(String(format: "%.3f", settings.sensorValueAt50PSI))!,
                 "MessureWait": settings.measureWait,
                 "Precision": settings.precision,
-                "BTPinCode": settings.btPinCode,
                 "SimulationMode": settings.simulationMode,
                 "PressureCalcMethod": settings.pressureCalcMethod,
                 "type": "settings"
@@ -93,6 +94,13 @@ enum BLECommand {
             dict = [
                 "command": 7,
                 "enabled": enabled,
+                "type": "command"
+            ]
+
+        case .authenticate(let accessCode):
+            dict = [
+                "command": BLECommand.cmdAuthenticate,
+                "accessCode": accessCode,
                 "type": "command"
             ]
         }

@@ -135,7 +135,6 @@ final class BLEManagerTests: XCTestCase {
             "SensorValueAt50PSI": 2.853,
             "MessureWait": 2.0,
             "Precision": 1.0,
-            "BTPinCode": "1234",
             "SimulationMode": false,
             "PressureCalcMethod": 1,
             "operationMode": 4,

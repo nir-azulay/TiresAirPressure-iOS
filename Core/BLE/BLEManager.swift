@@ -11,6 +11,7 @@ class BLEManager: NSObject, ObservableObject {
     @Published var deviceStatus: DeviceStatus?
     @Published var deviceSettings: DeviceSettings?
     @Published var isScanning: Bool = false
+    @Published var accessCodeRequired: Bool = false
 
     let targetReachedSubject = PassthroughSubject<(target: Double, current: Double), Never>()
 
@@ -142,6 +143,7 @@ class BLEManager: NSObject, ObservableObject {
         commandCharacteristic = nil
         notifyCharacteristic = nil
         connectedDeviceName = nil
+        accessCodeRequired = false
         deviceStatus = nil
         deviceSettings = nil
         messageBuffer = ""
@@ -181,7 +183,11 @@ class BLEManager: NSObject, ObservableObject {
             ignoreNextStatusUpdate = false
         }
 
-        print("[BLEManager] Queueing command: \(String(data: data, encoding: .utf8) ?? "")")
+        if case .authenticate = command {
+            print("[BLEManager] Queueing access code")
+        } else {
+            print("[BLEManager] Queueing command: \(String(data: data, encoding: .utf8) ?? "")")
+        }
         writeQueue.append(data)
         processWriteQueue()
     }
@@ -216,6 +222,22 @@ class BLEManager: NSObject, ObservableObject {
 
     func sendSimulationMode(enabled: Bool) {
         sendCommand(.simulationMode(enabled: enabled))
+    }
+
+    func submitAccessCode(_ code: String) {
+        let trimmed = String(code.prefix(32))
+        if let address = connectedPeripheral?.identifier.uuidString {
+            saveAccessCode(trimmed, for: address)
+        }
+        accessCodeRequired = false
+        sendCommand(.authenticate(accessCode: trimmed))
+    }
+
+    private func sendSavedAccessCode() {
+        guard let address = connectedPeripheral?.identifier.uuidString else { return }
+        let code = SavedDevice.load().first { $0.address == address }?.accessCode ?? ""
+        guard !code.isEmpty else { return }
+        sendCommand(.authenticate(accessCode: code))
     }
 
     // MARK: - Auto-Connect
@@ -295,6 +317,18 @@ class BLEManager: NSObject, ObservableObject {
         guard let data = sanitized.data(using: .utf8),
               let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {
             print("[BLEManager] Failed to parse JSON: \(jsonString)")
+            return
+        }
+
+        if let type = json["type"] as? String, type == "auth" {
+            let accepted = json["ok"] as? Bool ?? false
+            let required = json["required"] as? Bool ?? false
+            if accepted {
+                accessCodeRequired = false
+                requestSettings()
+            } else if required {
+                accessCodeRequired = true
+            }
             return
         }
 
@@ -543,6 +577,7 @@ extension BLEManager: CBPeripheralDelegate {
             }
 
             if self.commandCharacteristic != nil && self.notifyCharacteristic != nil {
+                self.sendSavedAccessCode()
                 self.settingsRequestAttempts = 0
                 self.scheduleSettingsRequest()
                 self.syncDebugModeAfterConnection()
@@ -626,5 +661,12 @@ extension BLEManager {
             }
         }
         SavedDevice.save(reordered)
+    }
+
+    func saveAccessCode(_ code: String, for address: String) {
+        var savedDevices = SavedDevice.load()
+        guard let index = savedDevices.firstIndex(where: { $0.address == address }) else { return }
+        savedDevices[index].accessCode = code
+        SavedDevice.save(savedDevices)
     }
 }

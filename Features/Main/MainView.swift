@@ -16,6 +16,7 @@ struct MainView: View {
     @State private var showConnection = false
     @State private var showDeviceManagement = false
     @State private var animatedPressure: Double = 0.0
+    @State private var accessCodeInput: String = ""
 
     private let minPressure: Double = 5.0
     private let maxPressure: Double = 40.0
@@ -145,6 +146,22 @@ struct MainView: View {
         }
         .onDisappear {
             setKeepScreenOn(false)
+        }
+        .alert(
+            L("access_code_title", comment: "Access code"),
+            isPresented: Binding(
+                get: { bleManager.accessCodeRequired },
+                set: { bleManager.accessCodeRequired = $0 }
+            )
+        ) {
+            SecureField(L("access_code_title", comment: "Access code"), text: $accessCodeInput)
+            Button(L("ok", comment: "OK")) {
+                bleManager.submitAccessCode(accessCodeInput)
+                accessCodeInput = ""
+            }
+            Button(L("cancel", comment: "Cancel"), role: .cancel) { }
+        } message: {
+            Text(L("access_code_message", comment: "Enter the access code from the controller configuration page."))
         }
         .alert(
             L("target_reached_title", comment: ""),

@@ -286,7 +286,6 @@ struct DeviceSettingsView: View {
     @State private var sensorValueAt50PSI: String = "2.853"
     @State private var measureWait: String = "2.0"
     @State private var precision: String = "1.0"
-    @State private var btPinCode: String = "1234"
     @State private var simulationMode: Bool = false
     @State private var pressureCalcMethod: Int = 1
 
@@ -300,9 +299,6 @@ struct DeviceSettingsView: View {
                 Section("General") {
                     TextField("Device Name", text: $deviceName)
                         .onChange(of: deviceName) { _ in hasUnsavedChanges = true }
-
-                    TextField("BT Pin Code", text: $btPinCode)
-                        .onChange(of: btPinCode) { _ in hasUnsavedChanges = true }
                 }
 
                 Section("WiFi") {
@@ -438,7 +434,6 @@ struct DeviceSettingsView: View {
         sensorValueAt50PSI = String(format: "%.3f", s.sensorValueAt50PSI)
         measureWait = String(format: "%.1f", s.measureWait)
         precision = String(format: "%.1f", s.precision)
-        btPinCode = s.btPinCode
         simulationMode = s.simulationMode
         pressureCalcMethod = s.pressureCalcMethod
         hasUnsavedChanges = false
@@ -459,7 +454,6 @@ struct DeviceSettingsView: View {
         settings.sensorValueAt50PSI = Double(sensorValueAt50PSI) ?? 2.853
         settings.measureWait = Double(measureWait) ?? 2.0
         settings.precision = Double(precision) ?? 1.0
-        settings.btPinCode = btPinCode
         settings.simulationMode = simulationMode
         settings.pressureCalcMethod = pressureCalcMethod
 

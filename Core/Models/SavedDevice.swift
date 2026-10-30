@@ -7,13 +7,35 @@ struct SavedDevice: Identifiable, Codable, Equatable {
     let address: String
     let dateAdded: Date
     var connectionPriority: Int
+    var accessCode: String
 
-    init(name: String, address: String, connectionPriority: Int = 0) {
+    init(name: String, address: String, connectionPriority: Int = 0, accessCode: String = "") {
         self.id = UUID()
         self.name = name
         self.address = address
         self.dateAdded = Date()
         self.connectionPriority = connectionPriority
+        self.accessCode = accessCode
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        address = try container.decode(String.self, forKey: .address)
+        dateAdded = try container.decode(Date.self, forKey: .dateAdded)
+        connectionPriority = try container.decode(Int.self, forKey: .connectionPriority)
+        accessCode = try container.decodeIfPresent(String.self, forKey: .accessCode) ?? ""
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(address, forKey: .address)
+        try container.encode(dateAdded, forKey: .dateAdded)
+        try container.encode(connectionPriority, forKey: .connectionPriority)
+        try container.encode(accessCode, forKey: .accessCode)
     }
 
     static func == (lhs: SavedDevice, rhs: SavedDevice) -> Bool {
@@ -22,7 +44,7 @@ struct SavedDevice: Identifiable, Codable, Equatable {
 
     // Custom coding keys to ensure proper serialization
     enum CodingKeys: String, CodingKey {
-        case id, name, address, dateAdded, connectionPriority
+        case id, name, address, dateAdded, connectionPriority, accessCode
     }
 }
 
