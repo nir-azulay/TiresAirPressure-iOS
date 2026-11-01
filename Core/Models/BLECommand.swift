@@ -68,6 +68,12 @@ enum BLECommand {
                 "Precision": settings.precision,
                 "SimulationMode": settings.simulationMode,
                 "PressureCalcMethod": settings.pressureCalcMethod,
+                "SensorFullScalePSI": Double(String(format: "%.1f", settings.sensorFullScalePSI))!,
+                "MaxPressurePSI": Double(String(format: "%.1f", settings.maxPressurePSI))!,
+                "MaxValveOpenSec": settings.maxValveOpenSec,
+                "AccessPointPassword": settings.accessPointPassword,
+                "AccessCode": settings.accessCode,
+                "ClearAccessCode": settings.clearAccessCode,
                 "type": "settings"
             ]
 

@@ -275,17 +275,26 @@ struct DeviceSettingsView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @Environment(\.dismiss) private var dismiss
 
+    @State private var softwareVersion: String = ""
+    @State private var ipAddress: String = ""
     @State private var deviceName: String = ""
     @State private var wifiSsid: String = ""
     @State private var wifiPassword: String = ""
-    @State private var relayCompressorPin: Int = 0
-    @State private var relayFreePin: Int = 0
-    @State private var sensorPin: Int = 0
-    @State private var maxSecForStatus: Int = 30
-    @State private var sensorValueAt0PSI: String = "0.228"
-    @State private var sensorValueAt50PSI: String = "2.853"
-    @State private var measureWait: String = "2.0"
-    @State private var precision: String = "1.0"
+    @State private var accessPointPassword: String = "12345678"
+    @State private var hasAccessCode: Bool = false
+    @State private var accessCode: String = ""
+    @State private var clearAccessCode: Bool = false
+    @State private var relayCompressorPin: Int = 16
+    @State private var relayFreePin: Int = 17
+    @State private var sensorPin: Int = 34
+    @State private var maxSecForStatus: Int = 10
+    @State private var sensorValueAt0PSI: String = "410.000"
+    @State private var sensorValueAt50PSI: String = "3400.000"
+    @State private var sensorFullScalePSI: String = "50.0"
+    @State private var maxPressurePSI: String = "50.0"
+    @State private var maxValveOpenSec: Int = 120
+    @State private var measureWait: String = "1.0"
+    @State private var precision: String = "0.5"
     @State private var simulationMode: Bool = false
     @State private var pressureCalcMethod: Int = 1
 
@@ -296,35 +305,107 @@ struct DeviceSettingsView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section("General") {
-                    TextField("Device Name", text: $deviceName)
-                        .onChange(of: deviceName) { _ in hasUnsavedChanges = true }
+                if !softwareVersion.isEmpty || !ipAddress.isEmpty {
+                    Section("Device Info") {
+                        if !softwareVersion.isEmpty {
+                            HStack {
+                                Text("Firmware Version")
+                                Spacer()
+                                Text(softwareVersion)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        if !ipAddress.isEmpty {
+                            HStack {
+                                Text("IP Address")
+                                Spacer()
+                                Text(ipAddress)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
                 }
 
-                Section("WiFi") {
-                    TextField("WiFi SSID", text: $wifiSsid)
+                Section("General") {
+                    HStack {
+                        Text("Device Name")
+                        Spacer()
+                        TextField("Device Name", text: $deviceName)
+                            .multilineTextAlignment(.trailing)
+                            .onChange(of: deviceName) { _ in hasUnsavedChanges = true }
+                    }
+
+                    Toggle("Simulation Mode", isOn: $simulationMode)
+                        .onChange(of: simulationMode) { _ in hasUnsavedChanges = true }
+                }
+
+                Section("Wi-Fi & Hotspot") {
+                    TextField("Wi-Fi SSID", text: $wifiSsid)
                         .onChange(of: wifiSsid) { _ in hasUnsavedChanges = true }
 
-                    SecureField("WiFi Password", text: $wifiPassword)
+                    SecureField("Wi-Fi Password (leave blank to keep)", text: $wifiPassword)
                         .onChange(of: wifiPassword) { _ in hasUnsavedChanges = true }
+
+                    SecureField("Hotspot Password (min 8 chars)", text: $accessPointPassword)
+                        .onChange(of: accessPointPassword) { _ in hasUnsavedChanges = true }
+                }
+
+                Section("BLE Security") {
+                    SecureField(
+                        hasAccessCode ? "Access Code IS SET (leave blank to keep)" : "Access Code (unlocked - enter to set)",
+                        text: $accessCode
+                    )
+                    .disabled(clearAccessCode)
+                    .onChange(of: accessCode) { _ in hasUnsavedChanges = true }
+
+                    Toggle("Clear Access Code", isOn: $clearAccessCode)
+                        .onChange(of: clearAccessCode) { val in
+                            if val { accessCode = "" }
+                            hasUnsavedChanges = true
+                        }
+                }
+
+                Section("Safety Limits") {
+                    HStack {
+                        Text("Sensor Full Scale (PSI)")
+                        Spacer()
+                        TextField("50.0", text: $sensorFullScalePSI)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                            .onChange(of: sensorFullScalePSI) { _ in hasUnsavedChanges = true }
+                    }
+
+                    HStack {
+                        Text("Max Pressure (PSI)")
+                        Spacer()
+                        TextField("50.0", text: $maxPressurePSI)
+                            .keyboardType(.decimalPad)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 100)
+                            .onChange(of: maxPressurePSI) { _ in hasUnsavedChanges = true }
+                    }
+
+                    Stepper("Max Valve Open: \(maxValveOpenSec)s", value: $maxValveOpenSec, in: 10...600, step: 10)
+                        .onChange(of: maxValveOpenSec) { _ in hasUnsavedChanges = true }
                 }
 
                 Section("Hardware Pins") {
-                    Stepper("Compressor Pin: \(relayCompressorPin)", value: $relayCompressorPin, in: 0...40)
+                    Stepper("Compressor Pin (GPIO): \(relayCompressorPin)", value: $relayCompressorPin, in: 1...39)
                         .onChange(of: relayCompressorPin) { _ in hasUnsavedChanges = true }
 
-                    Stepper("Free Pin: \(relayFreePin)", value: $relayFreePin, in: 0...40)
+                    Stepper("Free/Deflate Pin (GPIO): \(relayFreePin)", value: $relayFreePin, in: 1...39)
                         .onChange(of: relayFreePin) { _ in hasUnsavedChanges = true }
 
-                    Stepper("Sensor Pin: \(sensorPin)", value: $sensorPin, in: 0...40)
+                    Stepper("Sensor Pin (ADC1 GPIO): \(sensorPin)", value: $sensorPin, in: 32...39)
                         .onChange(of: sensorPin) { _ in hasUnsavedChanges = true }
                 }
 
-                Section("Calibration") {
+                Section("Calibration & Timing") {
                     HStack {
                         Text(L("sensor_at_0_psi", comment: ""))
                         Spacer()
-                        TextField("0.228", text: $sensorValueAt0PSI)
+                        TextField("410.000", text: $sensorValueAt0PSI)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 100)
@@ -334,7 +415,7 @@ struct DeviceSettingsView: View {
                     HStack {
                         Text(L("sensor_at_50_psi", comment: ""))
                         Spacer()
-                        TextField("2.853", text: $sensorValueAt50PSI)
+                        TextField("3400.000", text: $sensorValueAt50PSI)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 100)
@@ -351,28 +432,25 @@ struct DeviceSettingsView: View {
                     HStack {
                         Text(L("precision_label", comment: ""))
                         Spacer()
-                        TextField("1.0", text: $precision)
+                        TextField("0.5", text: $precision)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
                             .onChange(of: precision) { _ in hasUnsavedChanges = true }
                     }
 
-                    Stepper("Max Status Time: \(maxSecForStatus)s", value: $maxSecForStatus, in: 5...120)
+                    Stepper("Max Status Time: \(maxSecForStatus)s", value: $maxSecForStatus, in: 1...120)
                         .onChange(of: maxSecForStatus) { _ in hasUnsavedChanges = true }
 
                     HStack {
                         Text(L("measure_wait_label", comment: ""))
                         Spacer()
-                        TextField("2.0", text: $measureWait)
+                        TextField("1.0", text: $measureWait)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
                             .onChange(of: measureWait) { _ in hasUnsavedChanges = true }
                     }
-
-                    Toggle("Simulation Mode", isOn: $simulationMode)
-                        .onChange(of: simulationMode) { _ in hasUnsavedChanges = true }
                 }
             }
             .navigationTitle("Device Configuration")
@@ -423,15 +501,24 @@ struct DeviceSettingsView: View {
 
     private func loadCurrentSettings() {
         guard let s = bleManager.deviceSettings else { return }
+        softwareVersion = s.softwareVersion
+        ipAddress = s.ipAddress
         deviceName = s.deviceName
         wifiSsid = s.wifiSsid
         wifiPassword = s.wifiPassword
+        accessPointPassword = s.accessPointPassword
+        hasAccessCode = s.hasAccessCode
+        accessCode = ""
+        clearAccessCode = false
         relayCompressorPin = s.relayCompressorPin
         relayFreePin = s.relayFreePin
         sensorPin = s.sensorPin
         maxSecForStatus = s.maxSecForStatus
         sensorValueAt0PSI = String(format: "%.3f", s.sensorValueAt0PSI)
         sensorValueAt50PSI = String(format: "%.3f", s.sensorValueAt50PSI)
+        sensorFullScalePSI = String(format: "%.1f", s.sensorFullScalePSI)
+        maxPressurePSI = String(format: "%.1f", s.maxPressurePSI)
+        maxValveOpenSec = s.maxValveOpenSec
         measureWait = String(format: "%.1f", s.measureWait)
         precision = String(format: "%.1f", s.precision)
         simulationMode = s.simulationMode
@@ -446,14 +533,20 @@ struct DeviceSettingsView: View {
         settings.deviceName = deviceName
         settings.wifiSsid = wifiSsid
         settings.wifiPassword = wifiPassword
+        settings.accessPointPassword = accessPointPassword.count >= 8 ? accessPointPassword : "12345678"
+        settings.accessCode = accessCode
+        settings.clearAccessCode = clearAccessCode
         settings.relayCompressorPin = relayCompressorPin
         settings.relayFreePin = relayFreePin
         settings.sensorPin = sensorPin
         settings.maxSecForStatus = maxSecForStatus
-        settings.sensorValueAt0PSI = Double(sensorValueAt0PSI) ?? 0.228
-        settings.sensorValueAt50PSI = Double(sensorValueAt50PSI) ?? 2.853
-        settings.measureWait = Double(measureWait) ?? 2.0
-        settings.precision = Double(precision) ?? 1.0
+        settings.sensorValueAt0PSI = Double(sensorValueAt0PSI) ?? 410.0
+        settings.sensorValueAt50PSI = Double(sensorValueAt50PSI) ?? 3400.0
+        settings.sensorFullScalePSI = Double(sensorFullScalePSI) ?? 50.0
+        settings.maxPressurePSI = Double(maxPressurePSI) ?? 50.0
+        settings.maxValveOpenSec = maxValveOpenSec
+        settings.measureWait = Double(measureWait) ?? 1.0
+        settings.precision = Double(precision) ?? 0.5
         settings.simulationMode = simulationMode
         settings.pressureCalcMethod = pressureCalcMethod
 

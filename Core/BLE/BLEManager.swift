@@ -213,6 +213,13 @@ class BLEManager: NSObject, ObservableObject {
     }
 
     func updateSettings(_ settings: DeviceSettings) {
+        if let address = connectedPeripheral?.identifier.uuidString {
+            if settings.clearAccessCode {
+                saveAccessCode("", for: address)
+            } else if !settings.accessCode.isEmpty {
+                saveAccessCode(String(settings.accessCode.prefix(32)), for: address)
+            }
+        }
         sendCommand(.updateSettings(settings))
     }
 

@@ -113,33 +113,89 @@ class SettingsManager: ObservableObject {
     }
 
     private func loadSettings() {
+        var needsRepair = false
+
         if let modeStr = userDefaults.string(forKey: Keys.displayMode),
            let mode = DisplayMode(rawValue: modeStr) {
             displayMode = mode
+        } else {
+            displayMode = .dark
+            needsRepair = true
         }
 
         if let langStr = userDefaults.string(forKey: Keys.language),
            let lang = AppLanguage(rawValue: langStr) {
             language = lang
+        } else {
+            language = .system
+            needsRepair = true
+        }
+
+        if userDefaults.object(forKey: Keys.minPressureCount) != nil {
+            let minVal = userDefaults.integer(forKey: Keys.minPressureCount)
+            if minVal >= 1 && minVal <= 8 {
+                minPressureCount = minVal
+            } else {
+                minPressureCount = 1
+                needsRepair = true
+            }
+        } else {
+            minPressureCount = 1
+            needsRepair = true
+        }
+
+        if userDefaults.object(forKey: Keys.maxPressureCount) != nil {
+            let maxVal = userDefaults.integer(forKey: Keys.maxPressureCount)
+            if maxVal >= minPressureCount && maxVal <= 16 {
+                maxPressureCount = maxVal
+            } else {
+                maxPressureCount = 8
+                needsRepair = true
+            }
+        } else {
+            maxPressureCount = 8
+            needsRepair = true
         }
 
         if let data = userDefaults.data(forKey: Keys.presetPressures),
            let pressures = try? JSONDecoder().decode([Double].self, from: data) {
-            presetPressures = pressures.sorted()
+            let valid = Array(Set(pressures.filter { !$0.isNaN && $0 >= 1.0 && $0 <= 80.0 }))
+                .sorted()
+            if valid.count >= minPressureCount {
+                let capped = Array(valid.prefix(maxPressureCount))
+                if capped != pressures {
+                    needsRepair = true
+                }
+                presetPressures = capped
+            } else {
+                presetPressures = [8, 10, 12, 16, 20, 30, 38, 40]
+                needsRepair = true
+            }
+        } else {
+            presetPressures = [8, 10, 12, 16, 20, 30, 38, 40]
+            needsRepair = true
         }
 
+        if userDefaults.object(forKey: Keys.simulationMode) == nil {
+            needsRepair = true
+        }
         simulationMode = userDefaults.bool(forKey: Keys.simulationMode)
+
+        if userDefaults.object(forKey: Keys.debugMode) == nil {
+            needsRepair = true
+        }
         debugMode = userDefaults.bool(forKey: Keys.debugMode)
         print("[SettingsManager] Loaded debugMode: \(debugMode)")
 
-        if userDefaults.object(forKey: Keys.minPressureCount) != nil {
-            minPressureCount = userDefaults.integer(forKey: Keys.minPressureCount)
-        }
-        if userDefaults.object(forKey: Keys.maxPressureCount) != nil {
-            maxPressureCount = userDefaults.integer(forKey: Keys.maxPressureCount)
-        }
-
         lastConnectedDeviceId = userDefaults.string(forKey: Keys.lastConnectedDeviceId)
+
+        // Ensure saved devices list is also validated/migrated at startup
+        _ = SavedDevice.load()
+
+        if needsRepair {
+            print("[SettingsManager] Auto-fixing app configuration in UserDefaults")
+            saveAllSettings()
+        }
     }
 
     private func saveAllSettings() {

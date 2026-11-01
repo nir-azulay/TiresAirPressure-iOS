@@ -20,12 +20,14 @@ struct SavedDevice: Identifiable, Codable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        id = try container.decode(UUID.self, forKey: .id)
-        name = try container.decode(String.self, forKey: .name)
-        address = try container.decode(String.self, forKey: .address)
-        dateAdded = try container.decode(Date.self, forKey: .dateAdded)
-        connectionPriority = try container.decode(Int.self, forKey: .connectionPriority)
-        accessCode = try container.decodeIfPresent(String.self, forKey: .accessCode) ?? ""
+        id = (try? container.decode(UUID.self, forKey: .id)) ?? UUID()
+        let rawName = (try? container.decode(String.self, forKey: .name))?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        name = rawName.isEmpty ? "esp32-AirUpDownController" : rawName
+        address = (try? container.decode(String.self, forKey: .address)) ?? ""
+        dateAdded = (try? container.decode(Date.self, forKey: .dateAdded)) ?? Date()
+        connectionPriority = max(0, (try? container.decode(Int.self, forKey: .connectionPriority)) ?? 0)
+        let rawCode = (try? container.decodeIfPresent(String.self, forKey: .accessCode)) ?? ""
+        accessCode = String(rawCode.prefix(32))
     }
 
     func encode(to encoder: Encoder) throws {
@@ -53,11 +55,45 @@ extension SavedDevice {
     static let userDefaultsKey = "SavedDevices"
 
     static func load() -> [SavedDevice] {
-        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey),
-              let devices = try? JSONDecoder().decode([SavedDevice].self, from: data) else {
+        guard let data = UserDefaults.standard.data(forKey: userDefaultsKey) else {
             return []
         }
-        return devices
+        guard let decoded = try? JSONDecoder().decode([SavedDevice].self, from: data) else {
+            // Corrupted data in UserDefaults — reset to clean empty array
+            save([])
+            return []
+        }
+
+        var seenAddresses = Set<String>()
+        var valid: [SavedDevice] = []
+        var needsRepair = false
+
+        for var dev in decoded.sorted(by: { $0.connectionPriority < $1.connectionPriority }) {
+            let trimmedAddr = dev.address.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmedAddr.isEmpty, UUID(uuidString: trimmedAddr) != nil, !seenAddresses.contains(trimmedAddr) else {
+                needsRepair = true
+                continue
+            }
+            seenAddresses.insert(trimmedAddr)
+            if dev.accessCode.count > 32 {
+                dev.accessCode = String(dev.accessCode.prefix(32))
+                needsRepair = true
+            }
+            if dev.connectionPriority != valid.count {
+                dev.connectionPriority = valid.count
+                needsRepair = true
+            }
+            valid.append(dev)
+            if valid.count >= 2 {
+                if decoded.count > 2 { needsRepair = true }
+                break
+            }
+        }
+
+        if needsRepair {
+            save(valid)
+        }
+        return valid
     }
 
     static func save(_ devices: [SavedDevice]) {

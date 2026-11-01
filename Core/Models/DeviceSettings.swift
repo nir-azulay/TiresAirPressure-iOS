@@ -18,26 +18,57 @@ struct DeviceSettings: Equatable {
     var ipAddress: String = ""
     var simulationMode: Bool = false
     var pressureCalcMethod: Int = 1
+    var sensorFullScalePSI: Double = 50.0
+    var maxPressurePSI: Double = 50.0
+    var maxValveOpenSec: Int = 120
+    var accessPointPassword: String = "12345678"
+    var hasAccessCode: Bool = false
+    var accessCode: String = ""
+    var clearAccessCode: Bool = false
 
     static func from(json: [String: Any]) -> DeviceSettings {
         var s = DeviceSettings()
-        s.operationMode = json["operationMode"] as? Int ?? 4
-        s.deviceName = stringValue(json["DeviceName"]) ?? ""
+        s.operationMode = intValue(json["operationMode"]) ?? 4
+        let name = (stringValue(json["DeviceName"]) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        s.deviceName = name.isEmpty ? "esp32-AirUpDownController" : name
         s.wifiSsid = stringValue(json["wifissid"]) ?? ""
         s.wifiPassword = stringValue(json["wifipassword"]) ?? ""
-        s.relayCompressorPin = intValue(json["RelayCompressorPin"]) ?? 0
-        s.relayFreePin = intValue(json["RelayFreePin"]) ?? 0
-        s.sensorPin = intValue(json["SensorPin"]) ?? 0
-        s.maxSecForStatus = intValue(json["MaxSecForStatus"]) ?? 30
-        s.sensorValueAt0PSI = doubleValue(json["SensorValueAt0PSI"]) ?? 0.228
-        s.sensorValueAt50PSI = doubleValue(json["SensorValueAt50PSI"]) ?? 2.853
-        s.measureWait = doubleValue(json["MessureWait"]) ?? 2.0
-        s.precision = doubleValue(json["Precision"]) ?? 1.0
-        s.currentPressure = doubleValue(json["CurrentPressure"]) ?? 0.0
+        let compPin = intValue(json["RelayCompressorPin"]) ?? 16
+        s.relayCompressorPin = (1...39).contains(compPin) ? compPin : 16
+        let freePin = intValue(json["RelayFreePin"]) ?? 17
+        s.relayFreePin = (1...39).contains(freePin) ? freePin : 17
+        let sensPin = intValue(json["SensorPin"]) ?? 34
+        s.sensorPin = (32...39).contains(sensPin) ? sensPin : 34
+        let maxSec = intValue(json["MaxSecForStatus"]) ?? 10
+        s.maxSecForStatus = (1...300).contains(maxSec) ? maxSec : 10
+        let v0 = doubleValue(json["SensorValueAt0PSI"]) ?? 410.0
+        let v50 = doubleValue(json["SensorValueAt50PSI"]) ?? 3400.0
+        if v0 >= 0 && v50 > 0 && v0 != v50 {
+            s.sensorValueAt0PSI = v0
+            s.sensorValueAt50PSI = v50
+        } else {
+            s.sensorValueAt0PSI = 410.0
+            s.sensorValueAt50PSI = 3400.0
+        }
+        let waitSec = doubleValue(json["MessureWait"]) ?? 1.0
+        s.measureWait = (0.2...60.0).contains(waitSec) ? waitSec : 1.0
+        let prec = doubleValue(json["Precision"]) ?? 0.5
+        s.precision = (0.1...10.0).contains(prec) ? prec : 0.5
+        s.currentPressure = max(0.0, doubleValue(json["CurrentPressure"]) ?? 0.0)
         s.softwareVersion = stringValue(json["Software_VER"]) ?? ""
         s.ipAddress = stringValue(json["IP"]) ?? ""
         s.simulationMode = boolValue(json["SimulationMode"]) ?? false
-        s.pressureCalcMethod = intValue(json["PressureCalcMethod"]) ?? 1
+        let method = intValue(json["PressureCalcMethod"]) ?? 1
+        s.pressureCalcMethod = (method == 1 || method == 2) ? method : 1
+        let fullScale = doubleValue(json["SensorFullScalePSI"]) ?? 50.0
+        s.sensorFullScalePSI = (fullScale > 0 && fullScale <= 300.0) ? fullScale : 50.0
+        let maxPsi = doubleValue(json["MaxPressurePSI"]) ?? 50.0
+        s.maxPressurePSI = (maxPsi > 0 && maxPsi <= 200.0) ? maxPsi : 50.0
+        let maxValveSec = intValue(json["MaxValveOpenSec"]) ?? 120
+        s.maxValveOpenSec = (10...3600).contains(maxValveSec) ? maxValveSec : 120
+        let apPwd = stringValue(json["AccessPointPassword"]) ?? "12345678"
+        s.accessPointPassword = apPwd.count >= 8 ? apPwd : "12345678"
+        s.hasAccessCode = boolValue(json["HasAccessCode"]) ?? false
         return s
     }
 
