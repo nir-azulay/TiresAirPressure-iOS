@@ -313,6 +313,9 @@ struct DeviceSettingsView: View {
     @State private var hasUnsavedChanges = false
     @State private var showingExitAlert = false
     @State private var isSaving = false
+    @State private var showWifiPassword = false
+    @State private var showHotspotPassword = false
+    @State private var showAccessCode = false
 
     var body: some View {
         NavigationView {
@@ -355,18 +358,61 @@ struct DeviceSettingsView: View {
                     TextField(L("ssid", comment: ""), text: $wifiSsid)
                         .onChange(of: wifiSsid) { _ in hasUnsavedChanges = true }
 
-                    SecureField(L("wifi_password_keep_hint", comment: ""), text: $wifiPassword)
-                        .onChange(of: wifiPassword) { _ in hasUnsavedChanges = true }
+                    HStack {
+                        if showWifiPassword {
+                            TextField(L("wifi_password_keep_hint", comment: ""), text: $wifiPassword)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                        } else {
+                            SecureField(L("wifi_password_keep_hint", comment: ""), text: $wifiPassword)
+                        }
+                        Button {
+                            showWifiPassword.toggle()
+                        } label: {
+                            Image(systemName: showWifiPassword ? "eye.slash.fill" : "eye.fill")
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .onChange(of: wifiPassword) { _ in hasUnsavedChanges = true }
 
-                    SecureField(L("hotspot_password_hint", comment: ""), text: $accessPointPassword)
-                        .onChange(of: accessPointPassword) { _ in hasUnsavedChanges = true }
+                    HStack {
+                        if showHotspotPassword {
+                            TextField(L("hotspot_password_hint", comment: ""), text: $accessPointPassword)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                        } else {
+                            SecureField(L("hotspot_password_hint", comment: ""), text: $accessPointPassword)
+                        }
+                        Button {
+                            showHotspotPassword.toggle()
+                        } label: {
+                            Image(systemName: showHotspotPassword ? "eye.slash.fill" : "eye.fill")
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .onChange(of: accessPointPassword) { _ in hasUnsavedChanges = true }
                 }
 
                 Section(L("ble_security", comment: "")) {
-                    SecureField(
-                        hasAccessCode ? L("access_code_set_hint", comment: "") : L("access_code_unlocked_hint", comment: ""),
-                        text: $accessCode
-                    )
+                    HStack {
+                        let placeholder = hasAccessCode ? L("access_code_set_hint", comment: "") : L("access_code_unlocked_hint", comment: "")
+                        if showAccessCode {
+                            TextField(placeholder, text: $accessCode)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+                        } else {
+                            SecureField(placeholder, text: $accessCode)
+                        }
+                        Button {
+                            showAccessCode.toggle()
+                        } label: {
+                            Image(systemName: showAccessCode ? "eye.slash.fill" : "eye.fill")
+                                .foregroundColor(AppColors.textSecondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
                     .disabled(clearAccessCode)
                     .onChange(of: accessCode) { _ in hasUnsavedChanges = true }
 
