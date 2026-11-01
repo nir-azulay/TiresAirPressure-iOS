@@ -9,51 +9,52 @@ struct DeviceManagementView: View {
     @State private var deviceToDelete: SavedDevice?
 
     var body: some View {
-        NavigationView {
+        ZStack {
+            AppColors.background.ignoresSafeArea()
+
             VStack(spacing: 0) {
                 if savedDevices.isEmpty {
                     EmptyDevicesView()
                 } else {
-                    List {
-                        ForEach(Array(savedDevices.enumerated()), id: \.element.id) { index, device in
-                            DeviceItemView(
-                                device: device,
-                                canMoveUp: index > 0,
-                                canMoveDown: index < savedDevices.count - 1,
-                                isDeleting: isDeleting,
-                                onDelete: { showDeleteAlert(for: device) },
-                                onMoveUp: { moveDevice(device, direction: .up) },
-                                onMoveDown: { moveDevice(device, direction: .down) }
-                            )
+                    ScrollView {
+                        LazyVStack(spacing: 10) {
+                            ForEach(Array(savedDevices.enumerated()), id: \.element.id) { index, device in
+                                DeviceItemView(
+                                    device: device,
+                                    canMoveUp: index > 0,
+                                    canMoveDown: index < savedDevices.count - 1,
+                                    isDeleting: isDeleting,
+                                    onDelete: { showDeleteAlert(for: device) },
+                                    onMoveUp: { moveDevice(device, direction: .up) },
+                                    onMoveDown: { moveDevice(device, direction: .down) }
+                                )
+                            }
                         }
-                    }
-                    .listStyle(PlainListStyle())
-                }
-            }
-            .navigationTitle(L("manage_paired_devices", comment: "Manage Paired Devices"))
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(L("back", comment: "Back")) {
-                        dismiss()
+                        .padding(16)
                     }
                 }
             }
-            .onAppear {
-                loadSavedDevices()
+        }
+        .navigationTitle(L("manage_paired_devices", comment: "Manage Paired Devices"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
+        .toolbarColorScheme(.dark, for: .navigationBar)
+        .preferredColorScheme(.dark)
+        .onAppear {
+            loadSavedDevices()
+        }
+        .alert(L("delete_device", comment: "Delete Device"),
+               isPresented: $showingDeleteAlert,
+               presenting: deviceToDelete) { device in
+            Button(L("cancel", comment: "Cancel"), role: .cancel) {
+                deviceToDelete = nil
             }
-            .alert(L("delete_device", comment: "Delete Device"),
-                   isPresented: $showingDeleteAlert,
-                   presenting: deviceToDelete) { device in
-                Button(L("cancel", comment: "Cancel"), role: .cancel) {
-                    deviceToDelete = nil
-                }
-                Button(L("delete", comment: "Delete"), role: .destructive) {
-                    deleteDevice(device)
-                }
-            } message: { device in
-                Text(String(format: L("delete_device_confirmation", comment: "Delete device confirmation"), device.name))
+            Button(L("delete", comment: "Delete"), role: .destructive) {
+                deleteDevice(device)
             }
+        } message: { device in
+            Text(String(format: L("delete_device_confirmation", comment: "Delete device confirmation"), device.name))
         }
     }
 
@@ -91,7 +92,6 @@ struct DeviceManagementView: View {
         if newIndex != currentIndex {
             savedDevices.move(fromOffsets: IndexSet(integer: currentIndex), toOffset: newIndex > currentIndex ? newIndex + 1 : newIndex)
 
-            // Update the order in BLE manager
             let newOrder = savedDevices.map { $0.address }
             bleManager.reorderDevices(newOrder)
         }
@@ -106,17 +106,16 @@ struct EmptyDevicesView: View {
             Spacer()
 
             Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                .font(.system(size: 64))
-                .foregroundColor(.secondary)
+                .font(.system(size: 56))
+                .foregroundColor(AppColors.primary.opacity(0.8))
 
             Text(L("no_paired_devices", comment: "No Paired Devices"))
-                .font(.title2)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
+                .font(.title3.bold())
+                .foregroundColor(.white)
 
             Text(L("no_paired_devices_description", comment: "No paired devices description"))
-                .font(.body)
-                .foregroundColor(.secondary)
+                .font(.subheadline)
+                .foregroundColor(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
 
@@ -137,50 +136,50 @@ struct DeviceItemView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            // Device Info
             VStack(alignment: .leading, spacing: 4) {
                 Text(device.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
                     .lineLimit(1)
 
                 Text(device.address)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundColor(AppColors.textSecondary)
                     .lineLimit(1)
             }
 
             Spacer()
 
-            // Action Buttons
-            HStack(spacing: 8) {
-                // Move Up Button
+            HStack(spacing: 12) {
                 Button(action: onMoveUp) {
                     Image(systemName: "chevron.up")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(canMoveUp ? AppColors.primary : .gray)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(canMoveUp ? AppColors.primary : Color.white.opacity(0.2))
                 }
                 .disabled(!canMoveUp || isDeleting)
 
-                // Move Down Button
                 Button(action: onMoveDown) {
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(canMoveDown ? AppColors.primary : .gray)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(canMoveDown ? AppColors.primary : Color.white.opacity(0.2))
                 }
                 .disabled(!canMoveDown || isDeleting)
 
-                // Delete Button
                 Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 16, weight: .medium))
+                    Image(systemName: "trash.fill")
+                        .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(AppColors.stopRed)
                 }
                 .disabled(isDeleting)
             }
         }
-        .padding(.vertical, 8)
-        .contentShape(Rectangle())
+        .padding(14)
+        .background(AppColors.cardBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(AppColors.cardBorder, lineWidth: 1)
+        )
+        .cornerRadius(12)
     }
 }
 
@@ -190,7 +189,6 @@ enum MoveDirection {
     case up, down
 }
 
-// MARK: - Preview
 #if DEBUG
 struct DeviceManagementView_Previews: PreviewProvider {
     static var previews: some View {

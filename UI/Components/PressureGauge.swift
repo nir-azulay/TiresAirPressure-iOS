@@ -6,8 +6,8 @@ struct PressureGauge: View {
     let maxPressure: Double
     let minPressure: Double
 
-    private let lineWidth: CGFloat = 16
-    private let innerLineWidth: CGFloat = 8
+    private let lineWidth: CGFloat = 14
+    private let innerLineWidth: CGFloat = 6
 
     init(
         currentPressure: Double,
@@ -23,42 +23,60 @@ struct PressureGauge: View {
 
     var body: some View {
         ZStack {
-            Circle()
-                .stroke(Color.gray.opacity(0.3), lineWidth: lineWidth)
-
-            if targetPressure != nil {
-                Circle()
-                    .trim(from: 0, to: targetProgress)
-                    .stroke(
-                        AppColors.primaryLight,
-                        style: StrokeStyle(lineWidth: innerLineWidth, lineCap: .round)
-                    )
-                    .padding(4)
-                    .rotationEffect(.degrees(-90))
+            // Outer 270° tick marks
+            ForEach(0..<21, id: \.self) { tick in
+                let isMajor = tick % 5 == 0
+                Rectangle()
+                    .fill(Double(tick) / 20.0 <= Double(currentProgress) ? AppColors.primary : Color.white.opacity(isMajor ? 0.35 : 0.15))
+                    .frame(width: isMajor ? 2.5 : 1.5, height: isMajor ? 8 : 5)
+                    .offset(y: -64)
+                    .rotationEffect(.degrees(-135 + Double(tick) * 13.5))
             }
 
             Circle()
-                .trim(from: 0, to: currentProgress)
+                .trim(from: 0, to: 0.75)
+                .stroke(Color.white.opacity(0.1), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+                .rotationEffect(.degrees(135))
+
+            if targetPressure != nil {
+                Circle()
+                    .trim(from: 0, to: targetProgress * 0.75)
+                    .stroke(
+                        AppColors.primaryLight.opacity(0.45),
+                        style: StrokeStyle(lineWidth: innerLineWidth, lineCap: .round)
+                    )
+                    .padding(10)
+                    .rotationEffect(.degrees(135))
+            }
+
+            Circle()
+                .trim(from: 0, to: currentProgress * 0.75)
                 .stroke(
-                    AppColors.primary,
+                    AngularGradient(
+                        gradient: Gradient(colors: [AppColors.inflateBlue, AppColors.primary]),
+                        center: .center,
+                        startAngle: .degrees(135),
+                        endAngle: .degrees(405)
+                    ),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
-                .rotationEffect(.degrees(-90))
+                .rotationEffect(.degrees(135))
+                .shadow(color: AppColors.primary.opacity(0.5), radius: 6)
                 .animation(.easeInOut(duration: 0.5), value: currentPressure)
 
             VStack(spacing: 4) {
                 Text(String(format: "%.1f", currentPressure))
-                    .font(.system(size: 32, weight: .heavy, design: .rounded))
+                    .font(.system(size: 30, weight: .heavy, design: .rounded))
                     .foregroundColor(.white)
 
                 Text("PSI")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(AppColors.primaryLight)
 
                 if let target = targetPressure {
                     Text("Target: \(String(format: "%.1f", target))")
                         .font(.system(size: 11))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(AppColors.textSecondary)
                 }
             }
         }

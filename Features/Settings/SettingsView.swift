@@ -100,13 +100,15 @@ struct SettingsView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
+                .background(AppColors.background)
 
                 // Bottom bar with Save and Close/Discard buttons (matching Android)
                 VStack(spacing: 8) {
                     if hasUnsavedChanges {
                         Text(L("unsaved_changes_message", comment: ""))
                             .font(.caption)
-                            .foregroundColor(.orange)
+                            .foregroundColor(AppColors.primaryLight)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
                     }
@@ -114,12 +116,12 @@ struct SettingsView: View {
                     HStack(spacing: 12) {
                         Button(action: saveSettings) {
                             Text(L("save_settings", comment: "Save Settings"))
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 48)
                                 .background(AppColors.primary)
-                                .cornerRadius(10)
+                                .cornerRadius(12)
                         }
 
                         Button(action: closeOrDiscard) {
@@ -130,11 +132,11 @@ struct SettingsView: View {
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 48)
-                                .background(Color.gray.opacity(0.6))
-                                .cornerRadius(10)
+                                .background(AppColors.cardBackground)
+                                .cornerRadius(12)
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.gray, lineWidth: 1)
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(AppColors.cardBorder, lineWidth: 1)
                                 )
                         }
                     }
@@ -142,13 +144,15 @@ struct SettingsView: View {
                     .padding(.bottom, 8)
                 }
                 .padding(.top, 8)
-                .background(Color(UIColor.systemGroupedBackground))
+                .background(AppColors.navBarBackground)
             }
+            .background(AppColors.background.ignoresSafeArea())
             .navigationTitle(L("settings", comment: "Settings"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
+            .preferredColorScheme(.dark)
             .sheet(isPresented: $showingDeviceSettings) {
                 DeviceSettingsView()
             }
@@ -456,8 +460,14 @@ struct DeviceSettingsView: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(AppColors.background)
             .navigationTitle("Device Configuration")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
+            .preferredColorScheme(.dark)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {

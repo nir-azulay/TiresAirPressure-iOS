@@ -9,7 +9,7 @@ struct ConnectionView: View {
         NavigationView {
             ZStack {
                 AppColors.background.ignoresSafeArea()
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     BluetoothStatusCard()
                     ScanControlCard()
                     DeviceListSection()
@@ -37,6 +37,7 @@ struct ConnectionView: View {
                 Text(L("bluetooth_required_explanation", comment: "Bluetooth is required"))
             }
         }
+        .preferredColorScheme(.dark)
         .onChange(of: bleManager.connectionState) { state in
             if state == .bluetoothDisabled {
                 showingPermissionAlert = true
@@ -53,17 +54,23 @@ struct BluetoothStatusCard: View {
     @EnvironmentObject var bleManager: BLEManager
 
     var body: some View {
-        HStack {
-            Image(systemName: bluetoothIcon)
-                .font(.title2)
-                .foregroundColor(bluetoothColor)
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(bluetoothColor.opacity(0.18))
+                    .frame(width: 42, height: 42)
+                Image(systemName: bluetoothIcon)
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundColor(bluetoothColor)
+            }
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(L("bluetooth_status", comment: ""))
-                    .font(.headline)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
                 Text(bleManager.connectionState.displayText)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(bluetoothColor)
             }
 
             Spacer()
@@ -72,13 +79,21 @@ struct BluetoothStatusCard: View {
                 Button(L("disconnect_device", comment: "Disconnect")) {
                     bleManager.disconnect()
                 }
-                .font(.caption)
-                .foregroundColor(AppColors.stopRed)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(AppColors.stopRed)
+                .cornerRadius(8)
             }
         }
-        .padding()
+        .padding(14)
         .background(AppColors.cardBackground)
-        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(AppColors.cardBorder, lineWidth: 1)
+        )
+        .cornerRadius(14)
     }
 
     private var bluetoothIcon: String {
@@ -105,42 +120,61 @@ struct ScanControlCard: View {
     @EnvironmentObject var bleManager: BLEManager
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             if bleManager.isScanning {
                 VStack(spacing: 12) {
                     ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: AppColors.primary))
                         .scaleEffect(1.2)
 
                     Text(L("scanning", comment: "Scanning"))
-                        .font(.headline)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(.white)
 
-                    Button(L("stop_scan", comment: "Stop Scan")) {
+                    Button {
                         bleManager.stopScanning()
+                    } label: {
+                        Text(L("stop_scan", comment: "Stop Scan").uppercased())
+                            .font(.system(size: 15, weight: .heavy, design: .rounded))
+                            .tracking(0.8)
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 48)
+                            .background(AppColors.stopRed)
+                            .cornerRadius(12)
                     }
-                    .font(.title2)
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(AppColors.stopRed)
-                    .cornerRadius(12)
                 }
             } else {
-                Button(L("scan_devices", comment: "Scan Devices")) {
+                Button {
                     bleManager.startScanning()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "antenna.radiowaves.left.and.right")
+                            .font(.system(size: 16, weight: .bold))
+                        Text(L("scan_devices", comment: "Scan Devices").uppercased())
+                            .font(.system(size: 15, weight: .heavy, design: .rounded))
+                            .tracking(0.8)
+                    }
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+                    .background(
+                        bleManager.connectionState.canScan
+                            ? LinearGradient(colors: [AppColors.primary, Color(hex: 0xE65100)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [Color.gray, Color.gray], startPoint: .topLeading, endPoint: .bottomTrailing)
+                    )
+                    .cornerRadius(12)
                 }
-                .font(.title2.weight(.medium))
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .background(bleManager.connectionState.canScan ? AppColors.primary : Color.gray)
-                .cornerRadius(12)
                 .disabled(!bleManager.connectionState.canScan)
             }
         }
-        .padding()
-                .background(AppColors.cardBackground)
-                .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.3), radius: 4, y: 2)
+        .padding(16)
+        .background(AppColors.cardBackground)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(AppColors.cardBorder, lineWidth: 1)
+        )
+        .cornerRadius(14)
     }
 }
 
@@ -151,20 +185,24 @@ struct DeviceListSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text(L("available_devices", comment: "Available Devices"))
-                    .font(.headline)
+                Text(L("available_devices", comment: "Available Devices").uppercased())
+                    .font(.system(size: 12, weight: .bold))
+                    .tracking(0.8)
+                    .foregroundColor(AppColors.textSecondary)
                 Spacer()
                 Text("(\(bleManager.discoveredDevices.count))")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(AppColors.primaryLight)
             }
 
             if bleManager.discoveredDevices.isEmpty {
                 EmptyDeviceListView()
             } else {
-                LazyVStack(spacing: 8) {
-                    ForEach(bleManager.discoveredDevices) { device in
-                        DeviceRow(device: device)
+                ScrollView {
+                    LazyVStack(spacing: 10) {
+                        ForEach(bleManager.discoveredDevices) { device in
+                            DeviceRow(device: device)
+                        }
                     }
                 }
             }
@@ -180,38 +218,44 @@ struct DeviceRow: View {
 
     var body: some View {
         Button(action: { bleManager.connect(to: device) }) {
-            HStack {
+            HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(device.name)
-                        .font(.headline)
-                        .foregroundColor(.primary)
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(.white)
                         .multilineTextAlignment(.leading)
 
                     Text(device.address)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundColor(AppColors.textSecondary)
 
                     Text(device.signalStrengthText)
-                        .font(.caption2)
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundColor(signalColor)
                 }
 
                 Spacer()
 
-                VStack {
+                VStack(spacing: 6) {
                     SignalStrengthIndicator(strength: device.signalStrength)
 
                     if bleManager.connectionState == .connecting {
                         ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: AppColors.primary))
                             .scaleEffect(0.8)
                     } else {
                         Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(AppColors.primaryLight)
                     }
                 }
             }
-            .padding()
+            .padding(14)
             .background(AppColors.cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(AppColors.cardBorder, lineWidth: 1)
+            )
             .cornerRadius(12)
         }
         .disabled(bleManager.connectionState == .connecting)
@@ -242,7 +286,7 @@ struct SignalStrengthIndicator: View {
 
     private func barColor(for index: Int) -> Color {
         let level = strengthLevel
-        return index < level ? signalColor : Color(.systemGray4)
+        return index < level ? signalColor : Color.white.opacity(0.2)
     }
 
     private var strengthLevel: Int {
@@ -269,19 +313,24 @@ struct EmptyDeviceListView: View {
     @EnvironmentObject var bleManager: BLEManager
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Image(systemName: bleManager.isScanning ? "antenna.radiowaves.left.and.right" : "magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundColor(.gray)
+                .font(.system(size: 42))
+                .foregroundColor(AppColors.primary.opacity(0.8))
 
             Text(emptyStateText)
+                .font(.system(size: 14, weight: .medium))
                 .multilineTextAlignment(.center)
-                .foregroundColor(.secondary)
+                .foregroundColor(AppColors.textSecondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 120)
+        .frame(maxWidth: .infinity, minHeight: 130)
         .padding()
         .background(AppColors.cardBackground)
-        .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(AppColors.cardBorder, lineWidth: 1)
+        )
+        .cornerRadius(14)
     }
 
     private var emptyStateText: String {
