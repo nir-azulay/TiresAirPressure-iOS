@@ -1,0 +1,30 @@
+Resources/he.lproj/Localizable.strings
+  s_d312b23a5c97c7::t_f52c216c296c53 231-265
+Resources/en.lproj/Localizable.strings
+  s_d312b23a5c97c7::t_ae2476ba6ef7a7 231-265
+Features/Main/MainView.swift
+  s_d312b23a5c97c7::t_fc4af09329f4bb 317
+  s_d312b23a5c97c7::t_6d889482a9b400 652
+  s_d312b23a5c97c7::t_13fc013496ba0b 835,846
+  s_d312b23a5c97c7::t_6b0d2f7371457e 394
+Features/Settings/SettingsView.swift
+  s_d312b23a5c97c7::t_cae18f40e71745 254-255,257-258
+  s_d312b23a5c97c7::t_95097f7bff0cc8 316,319,327,336,338,340,345,349-350,353,356,360,362,368,375,377,387,396,400-401,404,407,411,432,449,465,473,483,487-489
+  s_d312b23a5c97c7::t_d1c1fa934078b6 159-161
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "4b23eec051d26ac00e2901264a40a45059f9357b",
+  "prompts": {},
+  "sessions": {
+    "s_d312b23a5c97c7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4073ab5b-854e-4e47-8475-abc551f21d7a",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
