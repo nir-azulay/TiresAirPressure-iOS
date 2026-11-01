@@ -137,7 +137,7 @@ struct AboutView: View {
                     }
                 }
             }
-            .toolbarBackground(AppColors.primary, for: .navigationBar)
+            .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .onAppear { startConnectionTimer() }

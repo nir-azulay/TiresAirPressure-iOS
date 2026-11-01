@@ -19,11 +19,15 @@ struct ConnectionView: View {
             }
             .navigationTitle(L("scan_devices", comment: "Scan Devices"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(L("close", comment: "Close")) {
                         dismiss()
                     }
+                    .foregroundColor(AppColors.primaryLight)
                 }
             }
             .alert(L("bluetooth_required", comment: "Bluetooth Required"),

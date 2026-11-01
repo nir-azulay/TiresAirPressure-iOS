@@ -10,9 +10,8 @@ struct SplashView: View {
 
             Image("LaunchImage")
                 .resizable()
-                .aspectRatio(contentMode: .fill)
+                .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .clipped()
                 .ignoresSafeArea()
 
             VStack {
@@ -21,7 +20,7 @@ struct SplashView: View {
                 if bleManager.connectionState == .scanning || bleManager.connectionState == .connecting {
                     VStack(spacing: 14) {
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .progressViewStyle(CircularProgressViewStyle(tint: AppColors.primary))
                             .scaleEffect(1.4)
 
                         Text(L("connecting", comment: "Connecting"))
@@ -30,7 +29,11 @@ struct SplashView: View {
                     }
                     .padding(.horizontal, 28)
                     .padding(.vertical, 16)
-                    .background(Color.black.opacity(0.6))
+                    .background(Color.black.opacity(0.75))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(AppColors.primary.opacity(0.6), lineWidth: 1)
+                    )
                     .cornerRadius(14)
                     .padding(.bottom, 60)
                 }

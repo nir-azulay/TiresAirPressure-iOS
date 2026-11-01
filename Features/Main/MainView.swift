@@ -27,13 +27,14 @@ struct MainView: View {
                 AppColors.background.ignoresSafeArea()
 
                 ScrollView {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 14) {
                         if bleManager.connectionState.isConnected {
                             ConnectionStatusCard()
                             PressureGaugeCard(
                                 currentPressure: animatedPressure,
                                 targetPressure: targetPressure,
                                 maxPressure: maxPressure,
+                                isInflating: isInflating,
                                 debugMode: settingsManager.debugMode,
                                 deviceStatus: bleManager.deviceStatus
                             )
@@ -44,10 +45,18 @@ struct MainView: View {
                             )
                             PresetButtons(
                                 pressures: settingsManager.presetPressures,
-                                onSelect: { targetPressure = $0 }
+                                selectedPressure: targetPressure,
+                                onSelect: { preset in
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        targetPressure = preset
+                                    }
+                                }
                             )
                             InflationControlButton(
                                 isInflating: isInflating,
+                                currentPressure: animatedPressure,
+                                targetPressure: targetPressure,
                                 onToggle: toggleInflation
                             )
                             InflationStatusIndicator(
@@ -60,21 +69,27 @@ struct MainView: View {
                         }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.top, 8)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
                 }
             }
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    Text(L("app_name", comment: ""))
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.white)
+                    HStack(spacing: 6) {
+                        Image(systemName: "gauge.with.dots.needle.67percent")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(AppColors.primary)
+                        Text(L("app_name", comment: ""))
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                    }
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape.fill")
-                            .foregroundColor(.white)
+                            .foregroundColor(.white.opacity(0.9))
                     }
                     Button {
                         isInflating = false
@@ -82,15 +97,15 @@ struct MainView: View {
                         showConnection = true
                     } label: {
                         Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                            .foregroundColor(.white)
+                            .foregroundColor(.white.opacity(0.9))
                     }
                     Button { showAbout = true } label: {
                         Image(systemName: "info.circle.fill")
-                            .foregroundColor(.white)
+                            .foregroundColor(.white.opacity(0.9))
                     }
                 }
             }
-            .toolbarBackground(AppColors.primary, for: .navigationBar)
+            .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $showSettings) {
@@ -107,6 +122,7 @@ struct MainView: View {
             bleManager.targetReachedSubject
                 .receive(on: DispatchQueue.main)
                 .sink { info in
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
                     targetReachedInfo = info
                     isInflating = false
                     showTargetReachedAlert = true
@@ -180,6 +196,7 @@ struct MainView: View {
     }
 
     private func toggleInflation() {
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         if isInflating {
             bleManager.stopOperation()
             isInflating = false
@@ -200,31 +217,41 @@ struct ConnectionStatusCard: View {
     @EnvironmentObject var bleManager: BLEManager
 
     var body: some View {
-        HStack(spacing: 4) {
-            Spacer()
+        HStack(spacing: 8) {
+            Circle()
+                .fill(connectionColor)
+                .frame(width: 8, height: 8)
+                .shadow(color: connectionColor.opacity(0.8), radius: 4)
+
             Image(systemName: connectionIcon)
-                .font(.system(size: 16))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(connectionColor)
 
             Text(bleManager.connectionState.displayText)
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(connectionColor)
 
             if let name = bleManager.connectedDeviceName, bleManager.connectionState == .connected {
-                Text("(\(name))")
-                    .font(.system(size: 14))
-                    .foregroundColor(connectionColor)
+                Text("• \(name)")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+                    .lineLimit(1)
             }
             Spacer()
         }
-        .padding(8)
-        .background(connectionColor.opacity(0.2))
-        .cornerRadius(8)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+        .background(connectionColor.opacity(0.12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(connectionColor.opacity(0.35), lineWidth: 1)
+        )
+        .cornerRadius(10)
     }
 
     private var connectionIcon: String {
         switch bleManager.connectionState {
-        case .connected: return "antenna.radiowaves.left.and.right.circle.fill"
+        case .connected: return "antenna.radiowaves.left.and.right"
         case .connecting: return "antenna.radiowaves.left.and.right"
         case .scanning: return "magnifyingglass"
         case .bluetoothDisabled: return "antenna.radiowaves.left.and.right.slash"
@@ -242,83 +269,151 @@ struct ConnectionStatusCard: View {
     }
 }
 
-// MARK: - Pressure Gauge Card (matching Android layout)
+// MARK: - Automotive Speedometer Pressure Gauge Card
 struct PressureGaugeCard: View {
     let currentPressure: Double
     let targetPressure: Double
     let maxPressure: Double
+    let isInflating: Bool
     let debugMode: Bool
     let deviceStatus: DeviceStatus?
 
+    private var activeAccentColor: Color {
+        if !isInflating {
+            if abs(currentPressure - targetPressure) <= 0.5 && currentPressure > 0 {
+                return AppColors.connectedGreen
+            }
+            return AppColors.primary
+        }
+        return currentPressure <= targetPressure ? AppColors.inflateBlue : AppColors.deflateRed
+    }
+
     var body: some View {
-        HStack(spacing: 0) {
-            // Left side - Current Pressure text
-            VStack(spacing: 4) {
-                Text(L("current_pressure", comment: ""))
-                    .font(.system(size: 16, weight: .regular))
-                    .foregroundColor(.white)
+        HStack(spacing: 8) {
+            // Left side - Live Readout & Delta
+            VStack(alignment: .leading, spacing: 6) {
+                Text(L("current_pressure", comment: "").uppercased())
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1.0)
+                    .foregroundColor(AppColors.textSecondary)
 
-                Text(String(format: "%.1f", currentPressure))
-                    .font(.system(size: 42, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(String(format: "%.1f", currentPressure))
+                        .font(.system(size: 46, weight: .black, design: .rounded))
+                        .foregroundColor(.white)
+                        .monospacedDigit()
 
-                Text("PSI")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.white)
+                    Text("PSI")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundColor(activeAccentColor)
+                }
+
+                // Delta pill
+                let delta = targetPressure - currentPressure
+                HStack(spacing: 4) {
+                    Image(systemName: abs(delta) <= 0.5 ? "checkmark.circle.fill" : (delta > 0 ? "arrow.up.right" : "arrow.down.right"))
+                        .font(.system(size: 11, weight: .bold))
+                    Text(abs(delta) <= 0.5 ? "At Target" : String(format: "%+.1f PSI to target", delta))
+                        .font(.system(size: 12, weight: .semibold))
+                }
+                .foregroundColor(abs(delta) <= 0.5 ? AppColors.connectedGreen : (delta > 0 ? AppColors.inflateBlue : AppColors.primaryLight))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.06))
+                .cornerRadius(6)
 
                 if debugMode, let status = deviceStatus,
                    status.rawADC != nil || status.voltage != nil {
-                    Spacer().frame(height: 8)
-                    if let rawADC = status.rawADC {
-                        Text("rawADC: \(rawADC)")
-                            .font(.system(size: 12))
-                            .foregroundColor(.yellow)
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let rawADC = status.rawADC {
+                            Text("ADC: \(rawADC)")
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundColor(AppColors.debugYellow)
+                        }
+                        if let voltage = status.voltage {
+                            Text(String(format: "V: %.3f V", voltage))
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundColor(AppColors.debugYellow)
+                        }
                     }
-                    if let voltage = status.voltage {
-                        Text("voltage: \(String(format: "%.3f", voltage)) V")
-                            .font(.system(size: 12))
-                            .foregroundColor(.yellow)
-                    }
+                    .padding(.top, 4)
                 }
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 8)
+            .padding(.vertical, 12)
 
-            // Right side - Circular Gauge
+            // Right side - 270° Speedometer Dial
             ZStack {
                 let progress = min(max(currentPressure / maxPressure, 0), 1)
                 let targetProgress = min(max(targetPressure / maxPressure, 0), 1)
 
-                // Track
-                Circle()
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 16)
+                // Outer tick marks (270 degrees arc)
+                ForEach(0..<21, id: \.self) { tick in
+                    let isMajor = tick % 5 == 0
+                    Rectangle()
+                        .fill(Double(tick) / 20.0 <= progress ? activeAccentColor : Color.white.opacity(isMajor ? 0.35 : 0.15))
+                        .frame(width: isMajor ? 2.5 : 1.5, height: isMajor ? 8 : 5)
+                        .offset(y: -64)
+                        .rotationEffect(.degrees(-135 + Double(tick) * 13.5))
+                }
 
-                // Current pressure arc
+                // Background 270° Track
                 Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(AppColors.primary, style: StrokeStyle(lineWidth: 16, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
+                    .trim(from: 0, to: 0.75)
+                    .stroke(Color.white.opacity(0.1), style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                    .rotationEffect(.degrees(135))
+
+                // Target pressure inner 270° arc
+                Circle()
+                    .trim(from: 0, to: targetProgress * 0.75)
+                    .stroke(AppColors.primaryLight.opacity(0.45), style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .padding(11)
+                    .rotationEffect(.degrees(135))
+                    .animation(.easeInOut(duration: 0.25), value: targetPressure)
+
+                // Current pressure glowing 270° arc
+                Circle()
+                    .trim(from: 0, to: progress * 0.75)
+                    .stroke(
+                        AngularGradient(
+                            gradient: Gradient(colors: [AppColors.inflateBlue, activeAccentColor]),
+                            center: .center,
+                            startAngle: .degrees(135),
+                            endAngle: .degrees(405)
+                        ),
+                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                    )
+                    .rotationEffect(.degrees(135))
+                    .shadow(color: activeAccentColor.opacity(0.5), radius: 6)
                     .animation(.easeInOut(duration: 0.5), value: currentPressure)
 
-                // Target pressure arc (inner)
-                Circle()
-                    .trim(from: 0, to: targetProgress)
-                    .stroke(AppColors.primaryLight, style: StrokeStyle(lineWidth: 8, lineCap: .round))
-                    .padding(8)
-                    .rotationEffect(.degrees(-90))
-
-                // Target text in center
-                Text(String(format: "%.1f", targetPressure))
-                    .font(.system(size: 24, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
+                // Center Target Display
+                VStack(spacing: 2) {
+                    Text("TARGET")
+                        .font(.system(size: 10, weight: .bold))
+                        .tracking(0.8)
+                        .foregroundColor(AppColors.textSecondary)
+                    Text(String(format: "%.1f", targetPressure))
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .foregroundColor(AppColors.primaryLight)
+                        .monospacedDigit()
+                    Text("PSI")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundColor(AppColors.textSecondary)
+                }
             }
-            .aspectRatio(1, contentMode: .fit)
-            .padding(16)
-            .frame(maxWidth: .infinity)
+            .frame(width: 144, height: 144)
+            .padding(8)
         }
+        .padding(12)
         .background(AppColors.cardBackground)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.3), radius: 4, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AppColors.cardBorder, lineWidth: 1)
+        )
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.4), radius: 8, y: 4)
     }
 }
 
@@ -329,84 +424,134 @@ struct TargetPressureCard: View {
     let maxPressure: Double
 
     var body: some View {
-        VStack(spacing: 8) {
-            Text(L("target_pressure", comment: ""))
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.white)
+        VStack(spacing: 12) {
+            HStack {
+                Text(L("target_pressure", comment: "").uppercased())
+                    .font(.system(size: 12, weight: .bold))
+                    .tracking(1.0)
+                    .foregroundColor(AppColors.textSecondary)
+                Spacer()
+                Text("\(Int(minPressure))–\(Int(maxPressure)) PSI")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(AppColors.textSecondary)
+            }
+
+            HStack(spacing: 16) {
+                Button {
+                    if targetPressure > minPressure {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        targetPressure -= 0.5
+                    }
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 48, height: 48)
+                        .background(AppColors.presetButtonBg)
+                        .overlay(
+                            Circle().stroke(AppColors.cardBorder, lineWidth: 1)
+                        )
+                        .clipShape(Circle())
+                }
+
+                Spacer()
+
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    Text(String(format: "%.1f", targetPressure))
+                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .foregroundColor(AppColors.primaryLight)
+                        .monospacedDigit()
+                    Text("PSI")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
+                Spacer()
+
+                Button {
+                    if targetPressure < maxPressure {
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        targetPressure += 0.5
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(width: 48, height: 48)
+                        .background(AppColors.primary)
+                        .clipShape(Circle())
+                        .shadow(color: AppColors.primary.opacity(0.4), radius: 4, y: 2)
+                }
+            }
 
             Slider(
                 value: $targetPressure,
                 in: minPressure...maxPressure,
                 step: 0.5
             )
-            .tint(AppColors.primaryLight)
-
-            HStack {
-                Button {
-                    if targetPressure > minPressure { targetPressure -= 0.5 }
-                } label: {
-                    Image(systemName: "minus")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.black)
-                        .frame(width: 48, height: 48)
-                        .background(AppColors.primaryLight)
-                        .clipShape(Circle())
-                }
-
-                Spacer()
-
-                Text(String(format: "%.1f PSI", targetPressure))
-                    .font(.system(size: 28, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white)
-
-                Spacer()
-
-                Button {
-                    if targetPressure < maxPressure { targetPressure += 0.5 }
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(.black)
-                        .frame(width: 48, height: 48)
-                        .background(AppColors.primaryLight)
-                        .clipShape(Circle())
-                }
-            }
+            .tint(AppColors.primary)
         }
         .padding(16)
         .background(AppColors.cardBackground)
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.3), radius: 4, y: 2)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(AppColors.cardBorder, lineWidth: 1)
+        )
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.35), radius: 6, y: 3)
     }
 }
 
-// MARK: - Preset Buttons (4 per row, matching Android)
+// MARK: - Preset Buttons (4 per row, with active highlight)
 struct PresetButtons: View {
     let pressures: [Double]
+    let selectedPressure: Double
     let onSelect: (Double) -> Void
 
     var body: some View {
         if !pressures.isEmpty {
             let rows = pressures.chunked(into: 4)
-            VStack(spacing: 4) {
+            VStack(spacing: 8) {
                 ForEach(rows.indices, id: \.self) { rowIndex in
                     HStack(spacing: 8) {
                         ForEach(0..<4, id: \.self) { colIndex in
                             if colIndex < rows[rowIndex].count {
                                 let pressure = rows[rowIndex][colIndex]
+                                let isSelected = abs(pressure - selectedPressure) < 0.05
                                 Button {
                                     onSelect(pressure)
                                 } label: {
-                                    Text(String(format: "%.0f PSI", pressure))
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(AppColors.presetButtonText)
-                                        .frame(maxWidth: .infinity)
-                                        .frame(height: 48)
-                                        .background(AppColors.presetButtonBg)
-                                        .cornerRadius(4)
+                                    VStack(spacing: 1) {
+                                        Text(String(format: "%.0f", pressure))
+                                            .font(.system(size: 18, weight: .heavy, design: .rounded))
+                                        Text("PSI")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .opacity(0.8)
+                                    }
+                                    .foregroundColor(isSelected ? AppColors.presetButtonActiveText : AppColors.presetButtonText)
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 52)
+                                    .background(
+                                        isSelected
+                                            ? AppColors.presetButtonActiveBg
+                                            : AppColors.cardBackground
+                                    )
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(
+                                                isSelected ? AppColors.primaryLight : AppColors.cardBorder,
+                                                lineWidth: isSelected ? 1.5 : 1
+                                            )
+                                    )
+                                    .cornerRadius(12)
+                                    .shadow(
+                                        color: isSelected ? AppColors.primary.opacity(0.4) : .clear,
+                                        radius: 6,
+                                        y: 2
+                                    )
                                 }
                             } else {
-                                Spacer().frame(maxWidth: .infinity, minHeight: 48)
+                                Spacer().frame(maxWidth: .infinity, minHeight: 52)
                             }
                         }
                     }
@@ -419,58 +564,106 @@ struct PresetButtons: View {
 // MARK: - Inflation Control Button
 struct InflationControlButton: View {
     let isInflating: Bool
+    let currentPressure: Double
+    let targetPressure: Double
     let onToggle: () -> Void
+
+    private var isDeflateAction: Bool {
+        currentPressure > targetPressure + 0.5
+    }
 
     var body: some View {
         Button(action: onToggle) {
-            HStack(spacing: 8) {
-                Image(systemName: isInflating ? "stop.fill" : "play.fill")
-                    .font(.system(size: 20))
+            HStack(spacing: 10) {
+                Image(systemName: isInflating ? "stop.fill" : (isDeflateAction ? "arrow.down.circle.fill" : "arrow.up.circle.fill"))
+                    .font(.system(size: 22, weight: .bold))
                 Text(isInflating
-                     ? L("stop", comment: "")
-                     : L("start", comment: ""))
-                    .font(.system(size: 16, weight: .bold))
+                     ? L("stop", comment: "").uppercased()
+                     : L("start", comment: "").uppercased())
+                    .font(.system(size: 17, weight: .heavy, design: .rounded))
+                    .tracking(1.0)
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity)
-            .frame(height: 56)
-            .background(isInflating ? AppColors.stopRed : AppColors.buttonBlue)
-            .cornerRadius(28)
+            .frame(height: 58)
+            .background(
+                LinearGradient(
+                    colors: isInflating
+                        ? [AppColors.stopRed, Color(hex: 0xB71C1C)]
+                        : [AppColors.primary, Color(hex: 0xE65100)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .cornerRadius(16)
+            .shadow(
+                color: (isInflating ? AppColors.stopRed : AppColors.primary).opacity(0.45),
+                radius: 8,
+                y: 4
+            )
         }
+        .padding(.top, 4)
     }
 }
 
-// MARK: - Inflation Status Indicator
+// MARK: - Inflation Status Indicator Banner
 struct InflationStatusIndicator: View {
     let isInflating: Bool
     let currentPressure: Double
     let targetPressure: Double
-    @State private var dotScale: CGFloat = 0.8
+    @State private var pulse: Bool = false
+
+    private var isDeflating: Bool {
+        currentPressure > targetPressure
+    }
+
+    private var accentColor: Color {
+        isDeflating ? AppColors.deflateRed : AppColors.inflateBlue
+    }
 
     var body: some View {
         if isInflating {
-            HStack(spacing: 8) {
-                Spacer()
-                Circle()
-                    .fill(AppColors.errorRed)
-                    .frame(width: 12, height: 12)
-                    .scaleEffect(dotScale)
-                    .animation(
-                        .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
-                        value: dotScale
-                    )
-                    .onAppear { dotScale = 1.2 }
-                    .onDisappear { dotScale = 0.8 }
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(accentColor.opacity(0.25))
+                        .frame(width: 34, height: 34)
+                        .scaleEffect(pulse ? 1.2 : 0.9)
+                        .animation(
+                            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+                            value: pulse
+                        )
+                    Image(systemName: isDeflating ? "arrow.down.circle.fill" : "arrow.up.circle.fill")
+                        .font(.system(size: 20, weight: .bold))
+                        .foregroundColor(accentColor)
+                }
+                .onAppear { pulse = true }
+                .onDisappear { pulse = false }
 
-                Text(currentPressure > targetPressure
-                     ? L("mode_deflating", comment: "")
-                     : L("mode_inflating", comment: ""))
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(AppColors.errorRed)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(isDeflating
+                         ? L("mode_deflating", comment: "")
+                         : L("mode_inflating", comment: ""))
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.white)
+
+                    let remaining = abs(targetPressure - currentPressure)
+                    Text(String(format: "%.1f PSI remaining to %.1f PSI", remaining, targetPressure))
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
                 Spacer()
             }
-            .frame(height: 48)
-            .transition(.opacity)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(accentColor.opacity(0.12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(accentColor.opacity(0.45), lineWidth: 1)
+            )
+            .cornerRadius(14)
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
         }
     }
 }
@@ -482,38 +675,59 @@ struct NotConnectedView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Spacer().frame(height: 60)
+            Spacer().frame(height: 40)
 
-            Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                .font(.system(size: 80))
-                .foregroundColor(Color.gray.opacity(0.5))
+            ZStack {
+                Circle()
+                    .fill(AppColors.cardBackground)
+                    .frame(width: 140, height: 140)
+                    .overlay(
+                        Circle().stroke(AppColors.cardBorder, lineWidth: 1.5)
+                    )
 
-            Text(L("not_connected", comment: ""))
-                .font(.system(size: 22, weight: .medium))
-                .foregroundColor(.gray)
+                Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                    .font(.system(size: 56, weight: .semibold))
+                    .foregroundColor(AppColors.primary)
+            }
 
-            Text(L("connect_to_device_hint", comment: ""))
-                .font(.system(size: 14))
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
+            VStack(spacing: 8) {
+                Text(L("not_connected", comment: ""))
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+
+                Text(L("connect_to_device_hint", comment: ""))
+                    .font(.system(size: 14))
+                    .foregroundColor(AppColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
 
             Button {
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 bleManager.startScanning()
                 showConnection = true
             } label: {
-                HStack {
+                HStack(spacing: 10) {
                     Image(systemName: "antenna.radiowaves.left.and.right")
-                    Text(L("scan_devices", comment: ""))
+                        .font(.system(size: 18, weight: .bold))
+                    Text(L("scan_devices", comment: "").uppercased())
+                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .tracking(0.8)
                 }
-                .font(.system(size: 16, weight: .medium))
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
-                .frame(height: 50)
-                .background(AppColors.primary)
-                .cornerRadius(25)
+                .frame(height: 54)
+                .background(
+                    LinearGradient(
+                        colors: [AppColors.primary, Color(hex: 0xE65100)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .cornerRadius(16)
+                .shadow(color: AppColors.primary.opacity(0.4), radius: 8, y: 4)
             }
-            .padding(.horizontal, 32)
+            .padding(.horizontal, 24)
 
             Spacer()
         }

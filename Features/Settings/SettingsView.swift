@@ -146,6 +146,9 @@ struct SettingsView: View {
             }
             .navigationTitle(L("settings", comment: "Settings"))
             .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.dark, for: .navigationBar)
             .sheet(isPresented: $showingDeviceSettings) {
                 DeviceSettingsView()
             }
