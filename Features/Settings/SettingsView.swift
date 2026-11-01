@@ -168,6 +168,11 @@ struct SettingsView: View {
             }
         }
         .onAppear { loadFromSettingsManager() }
+        .onChange(of: bleManager.deviceSettings) { newSettings in
+            if let s = newSettings, !hasUnsavedChanges {
+                editSimulationMode = s.simulationMode
+            }
+        }
         .onChange(of: editDisplayMode) { _ in checkForChanges() }
         .onChange(of: editLanguage) { _ in checkForChanges() }
         .onChange(of: editDebugMode) { _ in checkForChanges() }
@@ -179,7 +184,7 @@ struct SettingsView: View {
         editDisplayMode = settingsManager.displayMode
         editLanguage = settingsManager.language
         editDebugMode = settingsManager.debugMode
-        editSimulationMode = settingsManager.simulationMode
+        editSimulationMode = bleManager.deviceSettings?.simulationMode ?? settingsManager.simulationMode
         editPresetPressures = settingsManager.presetPressures
         hasUnsavedChanges = false
     }
@@ -509,7 +514,23 @@ struct DeviceSettingsView: View {
                 }
             }
         }
-        .onAppear { loadCurrentSettings() }
+        .onAppear {
+            if bleManager.deviceSettings == nil {
+                bleManager.requestSettings()
+            }
+            loadCurrentSettings()
+        }
+        .onChange(of: bleManager.deviceSettings) { _ in
+            if !hasUnsavedChanges && !isSaving {
+                loadCurrentSettings()
+            }
+        }
+    }
+
+    private func parseDecimal(_ text: String, fallback: Double) -> Double {
+        let normalized = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: ".")
+        return Double(normalized) ?? fallback
     }
 
     private func loadCurrentSettings() {
@@ -543,8 +564,8 @@ struct DeviceSettingsView: View {
         isSaving = true
 
         var settings = DeviceSettings()
-        settings.deviceName = deviceName
-        settings.wifiSsid = wifiSsid
+        settings.deviceName = deviceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        settings.wifiSsid = wifiSsid.trimmingCharacters(in: .whitespacesAndNewlines)
         settings.wifiPassword = wifiPassword
         settings.accessPointPassword = accessPointPassword.count >= 8 ? accessPointPassword : "12345678"
         settings.accessCode = accessCode
@@ -553,20 +574,20 @@ struct DeviceSettingsView: View {
         settings.relayFreePin = relayFreePin
         settings.sensorPin = sensorPin
         settings.maxSecForStatus = maxSecForStatus
-        settings.sensorValueAt0PSI = Double(sensorValueAt0PSI) ?? 410.0
-        settings.sensorValueAt50PSI = Double(sensorValueAt50PSI) ?? 3400.0
-        settings.sensorFullScalePSI = Double(sensorFullScalePSI) ?? 50.0
-        settings.maxPressurePSI = Double(maxPressurePSI) ?? 50.0
+        settings.sensorValueAt0PSI = parseDecimal(sensorValueAt0PSI, fallback: 410.0)
+        settings.sensorValueAt50PSI = parseDecimal(sensorValueAt50PSI, fallback: 3400.0)
+        settings.sensorFullScalePSI = parseDecimal(sensorFullScalePSI, fallback: 50.0)
+        settings.maxPressurePSI = parseDecimal(maxPressurePSI, fallback: 50.0)
         settings.maxValveOpenSec = maxValveOpenSec
-        settings.measureWait = Double(measureWait) ?? 1.0
-        settings.precision = Double(precision) ?? 0.5
+        settings.measureWait = parseDecimal(measureWait, fallback: 1.0)
+        settings.precision = parseDecimal(precision, fallback: 0.5)
         settings.simulationMode = simulationMode
         settings.pressureCalcMethod = pressureCalcMethod
 
         bleManager.updateSettings(settings)
 
         Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: 2_500_000_000)
             bleManager.forceReconnect()
 
             try? await Task.sleep(nanoseconds: 5_000_000_000)

@@ -186,9 +186,20 @@ class BLEManager: NSObject, ObservableObject {
         if case .authenticate = command {
             print("[BLEManager] Queueing access code")
         } else {
-            print("[BLEManager] Queueing command: \(String(data: data, encoding: .utf8) ?? "")")
+            print("[BLEManager] Queueing command (\(data.count) bytes): \(String(data: data, encoding: .utf8) ?? "")")
         }
-        writeQueue.append(data)
+
+        let maxChunkSize = 180
+        if data.count <= maxChunkSize {
+            writeQueue.append(data)
+        } else {
+            var offset = 0
+            while offset < data.count {
+                let end = min(offset + maxChunkSize, data.count)
+                writeQueue.append(data.subdata(in: offset..<end))
+                offset = end
+            }
+        }
         processWriteQueue()
     }
 
@@ -220,6 +231,8 @@ class BLEManager: NSObject, ObservableObject {
                 saveAccessCode(String(settings.accessCode.prefix(32)), for: address)
             }
         }
+        deviceSettings = settings
+        settingsManager?.updateSimulationMode(settings.simulationMode)
         sendCommand(.updateSettings(settings))
     }
 
@@ -301,10 +314,12 @@ class BLEManager: NSObject, ObservableObject {
 
         messageBuffer += chunk
 
-        while let range = messageBuffer.range(of: "}") {
-            let jsonString = String(messageBuffer[messageBuffer.startIndex...range.lowerBound])
-            messageBuffer = String(messageBuffer[range.upperBound...])
-            processMessage(jsonString)
+        while let closeRange = messageBuffer.range(of: "}") {
+            if let openRange = messageBuffer[..<closeRange.upperBound].range(of: "{") {
+                let jsonString = String(messageBuffer[openRange.lowerBound..<closeRange.upperBound])
+                processMessage(jsonString)
+            }
+            messageBuffer = String(messageBuffer[closeRange.upperBound...])
         }
     }
 
@@ -405,6 +420,7 @@ class BLEManager: NSObject, ObservableObject {
             rawADC: currentStatus?.rawADC,
             voltage: currentStatus?.voltage
         )
+        settingsManager?.updateSimulationMode(settings.simulationMode)
         print("[BLEManager] Updated DeviceStatus from full settings, preserved debug values")
     }
 
