@@ -1,0 +1,26 @@
+Features/Connection/ConnectionView.swift
+  s_d312b23a5c97c7::t_4f364726e5408d 12,40,57-65,67,69-70,72-73,82-87,90,92-96,123,127,131-132,134,136-144,148,150-166,171-177,188-191,194-195,201-205,221,224-225,229-230,233,239,244,248-249,253,255-258,289,316,318-319,322,324,326,329-333
+Features/Settings/DeviceManagementView.swift
+  s_d312b23a5c97c7::t_6ff5285d301c62 12-14,19-31,33,37-51,53-54,56-57,109-110,113-114,117-118,141-142,146-147,153,156-157,163-164,169-170,176-182,199
+UI/Components/PressureGauge.swift
+  s_d312b23a5c97c7::t_c44c090344180e 9-10,26-35,37-39,43,45,48-49,53,55-60,63-64,69,73-74,79
+Features/Settings/SettingsView.swift
+  s_d312b23a5c97c7::t_7dd63899edea6e 463-464,467-470
+  s_d312b23a5c97c7::t_fed92621e5c6ef 103-104,111,119,124,135-136,138-139,147,149,155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "c9a13559660d61990ab0327d90440102f6329107",
+  "prompts": {},
+  "sessions": {
+    "s_d312b23a5c97c7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4073ab5b-854e-4e47-8475-abc551f21d7a",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
