@@ -179,18 +179,19 @@ struct MainView: View {
         } message: {
             Text(L("access_code_message", comment: "Enter the access code from the controller configuration page."))
         }
-        .alert(
-            L("target_reached_title", comment: ""),
-            isPresented: $showTargetReachedAlert
-        ) {
-            Button("OK") { }
-        } message: {
-            if let info = targetReachedInfo {
-                Text("""
-                \(L("target_reached_message", comment: ""))
-                Target: \(String(format: "%.1f", info.target)) PSI
-                Current: \(String(format: "%.1f", info.current)) PSI
-                """)
+        .overlay {
+            if showTargetReachedAlert, let info = targetReachedInfo {
+                TargetReachedCelebrationView(
+                    targetPressure: info.target,
+                    currentPressure: info.current,
+                    onDismiss: {
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            showTargetReachedAlert = false
+                        }
+                    }
+                )
+                .transition(.opacity)
+                .zIndex(100)
             }
         }
     }
@@ -730,6 +731,186 @@ struct NotConnectedView: View {
             .padding(.horizontal, 24)
 
             Spacer()
+        }
+    }
+}
+
+// MARK: - Target Reached Celebration Overlay
+struct TargetReachedCelebrationView: View {
+    let targetPressure: Double
+    let currentPressure: Double
+    let onDismiss: () -> Void
+
+    @State private var cardScale: CGFloat = 0.6
+    @State private var cardOpacity: Double = 0.0
+    @State private var badgeScale: CGFloat = 0.2
+    @State private var ringScale1: CGFloat = 0.6
+    @State private var ringOpacity1: Double = 0.9
+    @State private var ringScale2: CGFloat = 0.6
+    @State private var ringOpacity2: Double = 0.7
+    @State private var particlesExpanded: Bool = false
+    @State private var glowPulse: Bool = false
+
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.78)
+                .ignoresSafeArea()
+                .onTapGesture { onDismiss() }
+
+            // Expanding shockwave rings & radial burst particles
+            ZStack {
+                Circle()
+                    .stroke(AppColors.connectedGreen, lineWidth: 3)
+                    .frame(width: 140, height: 140)
+                    .scaleEffect(ringScale1)
+                    .opacity(ringOpacity1)
+
+                Circle()
+                    .stroke(AppColors.primary, lineWidth: 2)
+                    .frame(width: 140, height: 140)
+                    .scaleEffect(ringScale2)
+                    .opacity(ringOpacity2)
+
+                ForEach(0..<12, id: \.self) { index in
+                    let angle = Double(index) * 30.0
+                    Circle()
+                        .fill(index % 2 == 0 ? AppColors.connectedGreen : AppColors.primaryLight)
+                        .frame(width: index % 3 == 0 ? 8 : 5, height: index % 3 == 0 ? 8 : 5)
+                        .offset(y: particlesExpanded ? -135 : -30)
+                        .opacity(particlesExpanded ? 0.0 : 1.0)
+                        .rotationEffect(.degrees(angle))
+                }
+            }
+            .offset(y: -70)
+
+            // Celebration Card
+            VStack(spacing: 18) {
+                ZStack {
+                    Circle()
+                        .fill(AppColors.connectedGreen.opacity(0.18))
+                        .frame(width: 96, height: 96)
+                        .scaleEffect(glowPulse ? 1.12 : 0.96)
+
+                    Circle()
+                        .stroke(AppColors.connectedGreen, lineWidth: 3)
+                        .frame(width: 82, height: 82)
+                        .shadow(color: AppColors.connectedGreen.opacity(0.8), radius: 10)
+
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 46, weight: .bold))
+                        .foregroundColor(AppColors.connectedGreen)
+                }
+                .scaleEffect(badgeScale)
+                .padding(.top, 6)
+
+                VStack(spacing: 6) {
+                    Text(L("target_reached_title", comment: "").uppercased())
+                        .font(.system(size: 20, weight: .black, design: .rounded))
+                        .tracking(1.2)
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.center)
+
+                    Text(L("target_reached_message", comment: ""))
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(AppColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+
+                // Achieved Pressure Display
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(String(format: "%.1f", currentPressure))
+                        .font(.system(size: 52, weight: .black, design: .rounded))
+                        .foregroundColor(AppColors.connectedGreen)
+                        .monospacedDigit()
+
+                    Text("PSI")
+                        .font(.system(size: 18, weight: .bold, design: .rounded))
+                        .foregroundColor(AppColors.primaryLight)
+                }
+                .padding(.vertical, 4)
+
+                // Target vs Current comparison pill
+                HStack(spacing: 16) {
+                    VStack(spacing: 2) {
+                        Text("TARGET")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(AppColors.textSecondary)
+                        Text(String(format: "%.1f PSI", targetPressure))
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundColor(AppColors.primaryLight)
+                    }
+                    Divider()
+                        .frame(height: 28)
+                        .background(AppColors.cardBorder)
+                    VStack(spacing: 2) {
+                        Text("CURRENT")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(AppColors.textSecondary)
+                        Text(String(format: "%.1f PSI", currentPressure))
+                            .font(.system(size: 15, weight: .bold, design: .rounded))
+                            .foregroundColor(AppColors.connectedGreen)
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 10)
+                .background(Color.white.opacity(0.05))
+                .cornerRadius(12)
+
+                Button(action: {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    onDismiss()
+                }) {
+                    Text(L("ok", comment: "OK").uppercased())
+                        .font(.system(size: 16, weight: .heavy, design: .rounded))
+                        .tracking(1.0)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                        .background(
+                            LinearGradient(
+                                colors: [AppColors.connectedGreen, Color(hex: 0x059669)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .cornerRadius(14)
+                        .shadow(color: AppColors.connectedGreen.opacity(0.45), radius: 8, y: 4)
+                }
+                .padding(.top, 4)
+            }
+            .padding(24)
+            .frame(maxWidth: 340)
+            .background(AppColors.cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 22)
+                    .stroke(AppColors.connectedGreen.opacity(0.7), lineWidth: 1.5)
+            )
+            .cornerRadius(22)
+            .shadow(color: AppColors.connectedGreen.opacity(0.25), radius: 24, y: 8)
+            .scaleEffect(cardScale)
+            .opacity(cardOpacity)
+            .padding(.horizontal, 24)
+        }
+        .onAppear {
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.68)) {
+                cardScale = 1.0
+                cardOpacity = 1.0
+            }
+            withAnimation(.spring(response: 0.55, dampingFraction: 0.55).delay(0.1)) {
+                badgeScale = 1.0
+            }
+            withAnimation(.easeOut(duration: 1.1)) {
+                ringScale1 = 2.4
+                ringOpacity1 = 0.0
+                particlesExpanded = true
+            }
+            withAnimation(.easeOut(duration: 1.3).delay(0.15)) {
+                ringScale2 = 2.1
+                ringOpacity2 = 0.0
+            }
+            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                glowPulse = true
+            }
         }
     }
 }
