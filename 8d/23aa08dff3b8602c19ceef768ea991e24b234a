@@ -1,0 +1,20 @@
+Features/Settings/SettingsView.swift
+  s_d312b23a5c97c7::t_df59b0ad18c17e 361-377,379-395,399-415
+  s_d312b23a5c97c7::t_929c573c215819 316-318
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "8d23aa08dff3b8602c19ceef768ea991e24b234a",
+  "prompts": {},
+  "sessions": {
+    "s_d312b23a5c97c7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4073ab5b-854e-4e47-8475-abc551f21d7a",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
