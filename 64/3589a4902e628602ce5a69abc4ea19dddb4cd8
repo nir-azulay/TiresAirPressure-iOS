@@ -1,0 +1,33 @@
+Core/Models/DeviceSettings.swift
+  s_d312b23a5c97c7::t_3579b5968cc4bf 21-27,63-71
+  s_d312b23a5c97c7::t_99b05f081799e0 31-33,36-57,61-62
+Core/BLE/BLEManager.swift
+  s_d312b23a5c97c7::t_11c7ef4711567c 216-222
+Core/Services/SettingsManager.swift
+  s_d312b23a5c97c7::t_be7410a7f97a75 116-117,121-123,129-157,162-176,179-181,184-185,187-188,191-198
+Core/Models/BLECommand.swift
+  s_d312b23a5c97c7::t_60360ea2702655 71-76
+Features/Settings/SettingsView.swift
+  s_d312b23a5c97c7::t_78be7e1bcc1c8f 278-279,283-297,308-328,330-339,342-343,346,348-390,394,397,400,404,408,418,435,442,448,504-505,509-512,519-521,536-538,543-549
+Features/Splash/SplashView.swift
+  s_d312b23a5c97c7::t_12ab0c097fc461 9,13-16,18-19,22,24-25,28,31-35
+Core/Models/SavedDevice.swift
+  s_d312b23a5c97c7::t_446b98f271505d 58,61-96
+  s_d312b23a5c97c7::t_88d541313fafbc 23-30
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "643589a4902e628602ce5a69abc4ea19dddb4cd8",
+  "prompts": {},
+  "sessions": {
+    "s_d312b23a5c97c7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4073ab5b-854e-4e47-8475-abc551f21d7a",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
