@@ -1,6 +1,6 @@
 # Tire Pressure Manager — iOS & CarPlay (`v2.1.0`)
 
-Native SwiftUI iOS, iPadOS, and CarPlay application for monitoring and controlling the ESP32 Tire Air Pressure Controller over Bluetooth Low Energy (BLE).
+Native SwiftUI iOS, iPadOS, and CarPlay companion application for the open-source **DIY (Do-It-Yourself)** ESP32 Tire Air Pressure Management System over Bluetooth Low Energy (BLE).
 
 ## Features
 
