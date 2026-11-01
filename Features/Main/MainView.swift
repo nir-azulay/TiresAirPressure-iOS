@@ -314,7 +314,7 @@ struct PressureGaugeCard: View {
                 HStack(spacing: 4) {
                     Image(systemName: abs(delta) <= 0.5 ? "checkmark.circle.fill" : (delta > 0 ? "arrow.up.right" : "arrow.down.right"))
                         .font(.system(size: 11, weight: .bold))
-                    Text(abs(delta) <= 0.5 ? "At Target" : String(format: "%+.1f PSI to target", delta))
+                    Text(abs(delta) <= 0.5 ? L("at_target", comment: "") : String(format: L("psi_to_target_format", comment: ""), delta))
                         .font(.system(size: 12, weight: .semibold))
                 }
                 .foregroundColor(abs(delta) <= 0.5 ? AppColors.connectedGreen : (delta > 0 ? AppColors.inflateBlue : AppColors.primaryLight))
@@ -391,7 +391,7 @@ struct PressureGaugeCard: View {
 
                 // Center Target Display
                 VStack(spacing: 2) {
-                    Text("TARGET")
+                    Text(L("target_short", comment: ""))
                         .font(.system(size: 10, weight: .bold))
                         .tracking(0.8)
                         .foregroundColor(AppColors.textSecondary)
@@ -649,7 +649,7 @@ struct InflationStatusIndicator: View {
                         .foregroundColor(.white)
 
                     let remaining = abs(targetPressure - currentPressure)
-                    Text(String(format: "%.1f PSI remaining to %.1f PSI", remaining, targetPressure))
+                    Text(String(format: L("psi_remaining_to_target_format", comment: ""), remaining, targetPressure))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(AppColors.textSecondary)
                 }
@@ -832,7 +832,7 @@ struct TargetReachedCelebrationView: View {
                 // Target vs Current comparison pill
                 HStack(spacing: 16) {
                     VStack(spacing: 2) {
-                        Text("TARGET")
+                        Text(L("target_short", comment: ""))
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(AppColors.textSecondary)
                         Text(String(format: "%.1f PSI", targetPressure))
@@ -843,7 +843,7 @@ struct TargetReachedCelebrationView: View {
                         .frame(height: 28)
                         .background(AppColors.cardBorder)
                     VStack(spacing: 2) {
-                        Text("CURRENT")
+                        Text(L("current_short", comment: ""))
                             .font(.system(size: 10, weight: .bold))
                             .foregroundColor(AppColors.textSecondary)
                         Text(String(format: "%.1f PSI", currentPressure))

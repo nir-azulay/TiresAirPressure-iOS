@@ -228,3 +228,38 @@
 "measure_wait_label" = "זמן המתנה למדידה:";
 "unsaved_changes_warning" = "יש לך שינויים לא שמורים שיאבדו.";
 "saving_restarting" = "שומר ומפעיל מחדש את המכשיר...";
+
+/* New UI & Device Configuration Strings */
+"at_target" = "הגיע ליעד";
+"psi_to_target_format" = "%+.1f PSI ליעד";
+"target_short" = "יעד";
+"current_short" = "נוכחי";
+"psi_remaining_to_target_format" = "נותרו %.1f PSI עד %.1f PSI";
+"psi_remaining_short_format" = " (נותרו %.1f PSI)";
+"device_configuration" = "הגדרות בקר";
+"device_info" = "פרטי מכשיר";
+"firmware_version" = "גרסת קושחה";
+"ip_address" = "כתובת IP";
+"general" = "כללי";
+"wifi_and_hotspot" = "Wi-Fi ונקודה חמה";
+"wifi_password_keep_hint" = "סיסמת Wi-Fi (השאר ריק לשמירת הקיימת)";
+"hotspot_password_hint" = "סיסמת נקודה חמה (לפחות 8 תווים)";
+"ble_security" = "אבטחת BLE";
+"access_code_set_hint" = "קוד גישה BLE (מוגדר - השאר ריק לשמירה)";
+"access_code_unlocked_hint" = "קוד גישה BLE (פתוח - הזן להגדרה)";
+"clear_access_code" = "נקה קוד גישה BLE";
+"safety_limits" = "מגבלות בטיחות";
+"sensor_full_scale_psi" = "טווח חיישן מקסימלי (PSI)";
+"max_pressure_psi" = "לחץ מקסימלי מותר (PSI)";
+"max_valve_open_sec" = "זמן פתיחת שסתום מקסימלי (שניות)";
+"max_valve_open_format" = "זמן שסתום מקסימלי: %d שניות";
+"hardware_pins" = "פיני חומרה";
+"compressor_pin_format" = "פין מדחס (GPIO): %d";
+"free_pin_format" = "פין שחרור אוויר (GPIO): %d";
+"sensor_pin_format" = "פין חיישן (ADC1 GPIO): %d";
+"calibration_and_timing" = "כיול ותזמון";
+"max_status_time_format" = "זמן מקסימלי לסטטוס: %d שניות";
+"save" = "שמור";
+"reset" = "אפס";
+"add" = "הוסף";
+

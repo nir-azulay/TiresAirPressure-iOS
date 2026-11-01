@@ -156,9 +156,9 @@ struct SettingsView: View {
             .sheet(isPresented: $showingDeviceSettings) {
                 DeviceSettingsView()
             }
-            .alert("Reset Settings", isPresented: $showingResetAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Reset", role: .destructive) {
+            .alert(L("reset_to_defaults", comment: ""), isPresented: $showingResetAlert) {
+                Button(L("cancel", comment: ""), role: .cancel) { }
+                Button(L("reset", comment: ""), role: .destructive) {
                     settingsManager.resetToDefaults()
                     loadFromSettingsManager()
                     hasUnsavedChanges = false
@@ -251,11 +251,11 @@ struct PresetPressuresSection: View {
                     Text(L("add_pressure", comment: "Add Pressure"))
                 }
             }
-            .alert("Add Preset Pressure", isPresented: $showingAddPressure) {
-                TextField("Pressure (1-80 PSI)", text: $newPressure)
+            .alert(L("add_pressure", comment: ""), isPresented: $showingAddPressure) {
+                TextField("1-80 PSI", text: $newPressure)
                     .keyboardType(.decimalPad)
-                Button("Cancel", role: .cancel) { newPressure = "" }
-                Button("Add") { addNewPressure() }
+                Button(L("cancel", comment: ""), role: .cancel) { newPressure = "" }
+                Button(L("add", comment: "")) { addNewPressure() }
             } message: {
                 Text(L("enter_pressure_hint", comment: ""))
             }
@@ -313,10 +313,10 @@ struct DeviceSettingsView: View {
         NavigationView {
             Form {
                 if !softwareVersion.isEmpty || !ipAddress.isEmpty {
-                    Section("Device Info") {
+                    Section(L("device_info", comment: "")) {
                         if !softwareVersion.isEmpty {
                             HStack {
-                                Text("Firmware Version")
+                                Text(L("firmware_version", comment: ""))
                                 Spacer()
                                 Text(softwareVersion)
                                     .foregroundColor(.secondary)
@@ -324,7 +324,7 @@ struct DeviceSettingsView: View {
                         }
                         if !ipAddress.isEmpty {
                             HStack {
-                                Text("IP Address")
+                                Text(L("ip_address", comment: ""))
                                 Spacer()
                                 Text(ipAddress)
                                     .foregroundColor(.secondary)
@@ -333,48 +333,48 @@ struct DeviceSettingsView: View {
                     }
                 }
 
-                Section("General") {
+                Section(L("general", comment: "")) {
                     HStack {
-                        Text("Device Name")
+                        Text(L("device_name", comment: ""))
                         Spacer()
-                        TextField("Device Name", text: $deviceName)
+                        TextField(L("device_name", comment: ""), text: $deviceName)
                             .multilineTextAlignment(.trailing)
                             .onChange(of: deviceName) { _ in hasUnsavedChanges = true }
                     }
 
-                    Toggle("Simulation Mode", isOn: $simulationMode)
+                    Toggle(L("simulation_mode", comment: ""), isOn: $simulationMode)
                         .onChange(of: simulationMode) { _ in hasUnsavedChanges = true }
                 }
 
-                Section("Wi-Fi & Hotspot") {
-                    TextField("Wi-Fi SSID", text: $wifiSsid)
+                Section(L("wifi_and_hotspot", comment: "")) {
+                    TextField(L("ssid", comment: ""), text: $wifiSsid)
                         .onChange(of: wifiSsid) { _ in hasUnsavedChanges = true }
 
-                    SecureField("Wi-Fi Password (leave blank to keep)", text: $wifiPassword)
+                    SecureField(L("wifi_password_keep_hint", comment: ""), text: $wifiPassword)
                         .onChange(of: wifiPassword) { _ in hasUnsavedChanges = true }
 
-                    SecureField("Hotspot Password (min 8 chars)", text: $accessPointPassword)
+                    SecureField(L("hotspot_password_hint", comment: ""), text: $accessPointPassword)
                         .onChange(of: accessPointPassword) { _ in hasUnsavedChanges = true }
                 }
 
-                Section("BLE Security") {
+                Section(L("ble_security", comment: "")) {
                     SecureField(
-                        hasAccessCode ? "Access Code IS SET (leave blank to keep)" : "Access Code (unlocked - enter to set)",
+                        hasAccessCode ? L("access_code_set_hint", comment: "") : L("access_code_unlocked_hint", comment: ""),
                         text: $accessCode
                     )
                     .disabled(clearAccessCode)
                     .onChange(of: accessCode) { _ in hasUnsavedChanges = true }
 
-                    Toggle("Clear Access Code", isOn: $clearAccessCode)
+                    Toggle(L("clear_access_code", comment: ""), isOn: $clearAccessCode)
                         .onChange(of: clearAccessCode) { val in
                             if val { accessCode = "" }
                             hasUnsavedChanges = true
                         }
                 }
 
-                Section("Safety Limits") {
+                Section(L("safety_limits", comment: "")) {
                     HStack {
-                        Text("Sensor Full Scale (PSI)")
+                        Text(L("sensor_full_scale_psi", comment: ""))
                         Spacer()
                         TextField("50.0", text: $sensorFullScalePSI)
                             .keyboardType(.decimalPad)
@@ -384,7 +384,7 @@ struct DeviceSettingsView: View {
                     }
 
                     HStack {
-                        Text("Max Pressure (PSI)")
+                        Text(L("max_pressure_psi", comment: ""))
                         Spacer()
                         TextField("50.0", text: $maxPressurePSI)
                             .keyboardType(.decimalPad)
@@ -393,22 +393,22 @@ struct DeviceSettingsView: View {
                             .onChange(of: maxPressurePSI) { _ in hasUnsavedChanges = true }
                     }
 
-                    Stepper("Max Valve Open: \(maxValveOpenSec)s", value: $maxValveOpenSec, in: 10...600, step: 10)
+                    Stepper(String(format: L("max_valve_open_format", comment: ""), maxValveOpenSec), value: $maxValveOpenSec, in: 10...600, step: 10)
                         .onChange(of: maxValveOpenSec) { _ in hasUnsavedChanges = true }
                 }
 
-                Section("Hardware Pins") {
-                    Stepper("Compressor Pin (GPIO): \(relayCompressorPin)", value: $relayCompressorPin, in: 1...39)
+                Section(L("hardware_pins", comment: "")) {
+                    Stepper(String(format: L("compressor_pin_format", comment: ""), relayCompressorPin), value: $relayCompressorPin, in: 1...39)
                         .onChange(of: relayCompressorPin) { _ in hasUnsavedChanges = true }
 
-                    Stepper("Free/Deflate Pin (GPIO): \(relayFreePin)", value: $relayFreePin, in: 1...39)
+                    Stepper(String(format: L("free_pin_format", comment: ""), relayFreePin), value: $relayFreePin, in: 1...39)
                         .onChange(of: relayFreePin) { _ in hasUnsavedChanges = true }
 
-                    Stepper("Sensor Pin (ADC1 GPIO): \(sensorPin)", value: $sensorPin, in: 32...39)
+                    Stepper(String(format: L("sensor_pin_format", comment: ""), sensorPin), value: $sensorPin, in: 32...39)
                         .onChange(of: sensorPin) { _ in hasUnsavedChanges = true }
                 }
 
-                Section("Calibration & Timing") {
+                Section(L("calibration_and_timing", comment: "")) {
                     HStack {
                         Text(L("sensor_at_0_psi", comment: ""))
                         Spacer()
@@ -429,7 +429,7 @@ struct DeviceSettingsView: View {
                             .onChange(of: sensorValueAt50PSI) { _ in hasUnsavedChanges = true }
                     }
 
-                    Picker("Calc Method", selection: $pressureCalcMethod) {
+                    Picker(L("pressure_calc_method", comment: ""), selection: $pressureCalcMethod) {
                         ForEach(PressureCalcMethod.allCases, id: \.rawValue) { method in
                             Text(method.displayText).tag(method.rawValue)
                         }
@@ -446,7 +446,7 @@ struct DeviceSettingsView: View {
                             .onChange(of: precision) { _ in hasUnsavedChanges = true }
                     }
 
-                    Stepper("Max Status Time: \(maxSecForStatus)s", value: $maxSecForStatus, in: 1...120)
+                    Stepper(String(format: L("max_status_time_format", comment: ""), maxSecForStatus), value: $maxSecForStatus, in: 1...120)
                         .onChange(of: maxSecForStatus) { _ in hasUnsavedChanges = true }
 
                     HStack {
@@ -462,7 +462,7 @@ struct DeviceSettingsView: View {
             }
             .scrollContentBackground(.hidden)
             .background(AppColors.background)
-            .navigationTitle("Device Configuration")
+            .navigationTitle(L("device_configuration", comment: ""))
             .navigationBarTitleDisplayMode(.inline)
             .toolbarBackground(AppColors.navBarBackground, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)
@@ -470,7 +470,7 @@ struct DeviceSettingsView: View {
             .preferredColorScheme(.dark)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button(L("cancel", comment: "")) {
                         if hasUnsavedChanges {
                             showingExitAlert = true
                         } else {
@@ -480,13 +480,13 @@ struct DeviceSettingsView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") { saveSettings() }
+                    Button(L("save", comment: "")) { saveSettings() }
                         .disabled(isSaving)
                 }
             }
-            .alert("Exit Without Saving?", isPresented: $showingExitAlert) {
-                Button("Cancel", role: .cancel) { }
-                Button("Discard", role: .destructive) { dismiss() }
+            .alert(L("exit_without_save", comment: ""), isPresented: $showingExitAlert) {
+                Button(L("cancel", comment: ""), role: .cancel) { }
+                Button(L("discard", comment: ""), role: .destructive) { dismiss() }
             } message: {
                 Text(L("unsaved_changes_warning", comment: ""))
             }

@@ -228,3 +228,38 @@
 "measure_wait_label" = "Measure Wait:";
 "unsaved_changes_warning" = "You have unsaved changes that will be lost.";
 "saving_restarting" = "Saving & Restarting Device...";
+
+/* New UI & Device Configuration Strings */
+"at_target" = "At Target";
+"psi_to_target_format" = "%+.1f PSI to target";
+"target_short" = "TARGET";
+"current_short" = "CURRENT";
+"psi_remaining_to_target_format" = "%.1f PSI remaining to %.1f PSI";
+"psi_remaining_short_format" = " (%.1f PSI remaining)";
+"device_configuration" = "Device Configuration";
+"device_info" = "Device Info";
+"firmware_version" = "Firmware Version";
+"ip_address" = "IP Address";
+"general" = "General";
+"wifi_and_hotspot" = "Wi-Fi & Hotspot";
+"wifi_password_keep_hint" = "Wi-Fi Password (leave blank to keep)";
+"hotspot_password_hint" = "Hotspot Password (min 8 chars)";
+"ble_security" = "BLE Security";
+"access_code_set_hint" = "BLE Access Code (SET - leave blank to keep)";
+"access_code_unlocked_hint" = "BLE Access Code (Unlocked - enter to set)";
+"clear_access_code" = "Clear BLE Access Code";
+"safety_limits" = "Safety Limits";
+"sensor_full_scale_psi" = "Sensor Full Scale (PSI)";
+"max_pressure_psi" = "Max Pressure (PSI)";
+"max_valve_open_sec" = "Max Valve Open (sec)";
+"max_valve_open_format" = "Max Valve Open: %ds";
+"hardware_pins" = "Hardware Pins";
+"compressor_pin_format" = "Compressor Pin (GPIO): %d";
+"free_pin_format" = "Free/Deflate Pin (GPIO): %d";
+"sensor_pin_format" = "Sensor Pin (ADC1 GPIO): %d";
+"calibration_and_timing" = "Calibration & Timing";
+"max_status_time_format" = "Max Status Time: %ds";
+"save" = "Save";
+"reset" = "Reset";
+"add" = "Add";
+
