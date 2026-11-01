@@ -2,6 +2,12 @@ import Foundation
 import CoreBluetooth
 import Combine
 
+struct WifiNetworkItem: Identifiable, Equatable {
+    var id: String { ssid }
+    let ssid: String
+    let rssi: Int
+}
+
 @MainActor
 class BLEManager: NSObject, ObservableObject {
     // MARK: - Published Properties
@@ -12,6 +18,8 @@ class BLEManager: NSObject, ObservableObject {
     @Published var deviceSettings: DeviceSettings?
     @Published var isScanning: Bool = false
     @Published var accessCodeRequired: Bool = false
+    @Published var availableWifiNetworks: [WifiNetworkItem] = []
+    @Published var isScanningWifi: Bool = false
 
     let targetReachedSubject = PassthroughSubject<(target: Double, current: Double), Never>()
 
@@ -94,7 +102,10 @@ class BLEManager: NSObject, ObservableObject {
     // MARK: - Connection
 
     func connect(to device: BLEDevice) {
+        autoConnectTask?.cancel()
+        autoConnectTask = nil
         stopScanning()
+        saveDevice(device)
         connectionState = .connecting
         connectedPeripheral = device.peripheral
         connectedPeripheral?.delegate = self
@@ -102,6 +113,7 @@ class BLEManager: NSObject, ObservableObject {
 
         centralManager.connect(device.peripheral, options: nil)
 
+        connectionTimer?.invalidate()
         connectionTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.connectionTimeout, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 self?.handleConnectionTimeout()
@@ -122,6 +134,7 @@ class BLEManager: NSObject, ObservableObject {
         connectionStartTime = Date()
         centralManager.connect(peripheral, options: nil)
 
+        connectionTimer?.invalidate()
         connectionTimer = Timer.scheduledTimer(withTimeInterval: BLEConstants.connectionTimeout, repeats: false) { [weak self] _ in
             Task { @MainActor in
                 self?.handleConnectionTimeout()
@@ -244,6 +257,17 @@ class BLEManager: NSObject, ObservableObject {
         sendCommand(.simulationMode(enabled: enabled))
     }
 
+    func scanWifiNetworks(rescan: Bool = true) {
+        if rescan {
+            isScanningWifi = true
+            Task { @MainActor [weak self] in
+                try? await Task.sleep(nanoseconds: 5_000_000_000)
+                self?.isScanningWifi = false
+            }
+        }
+        sendCommand(.scanWifi(rescan: rescan))
+    }
+
     func submitAccessCode(_ code: String) {
         let trimmed = String(code.prefix(32))
         if let address = connectedPeripheral?.identifier.uuidString {
@@ -269,23 +293,35 @@ class BLEManager: NSObject, ObservableObject {
             return
         }
 
+        // Also scan in the background so didDiscover can immediately connect if seen over the air
+        if centralManager.state == .poweredOn {
+            isScanning = true
+            centralManager.scanForPeripherals(
+                withServices: [serviceUUID],
+                options: [CBCentralManagerScanOptionAllowDuplicatesKey: false]
+            )
+        }
+
         autoConnectTask?.cancel()
         autoConnectTask = Task { @MainActor [weak self] in
             guard let self = self else { return }
             for saved in savedDevices {
                 guard !Task.isCancelled else { return }
+                if self.connectionState == .connected { return }
                 if let uuid = UUID(uuidString: saved.address) {
-                    for attempt in 1...3 {
+                    for attempt in 1...2 {
                         guard !Task.isCancelled else { return }
-                        print("[BLEManager] Auto-connect attempt \(attempt) to \(saved.name)")
+                        if self.connectionState == .connected { return }
+                        print("[BLEManager] Auto-connect attempt \(attempt) to \(saved.name) (\(saved.address))")
                         self.connectByIdentifier(uuid)
-                        try? await Task.sleep(nanoseconds: 5_000_000_000)
+                        try? await Task.sleep(nanoseconds: 3_500_000_000)
                         if self.connectionState == .connected {
                             return
                         }
                     }
                 }
             }
+            self.autoConnectTask = nil
             if self.connectionState != .connected {
                 self.startScanning()
             }
@@ -363,6 +399,24 @@ class BLEManager: NSObject, ObservableObject {
             return
         }
 
+        if let type = json["type"] as? String, type == "wifi_list" {
+            let raw = json["networks"] as? String ?? ""
+            var parsed: [WifiNetworkItem] = []
+            for entry in raw.split(separator: ";") {
+                let parts = entry.split(separator: "|", maxSplits: 1)
+                let ssid = parts.first.map(String.init)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                guard !ssid.isEmpty else { continue }
+                let rssi = parts.count > 1 ? (Int(parts[1]) ?? -80) : -80
+                if !parsed.contains(where: { $0.ssid == ssid }) {
+                    parsed.append(WifiNetworkItem(ssid: ssid, rssi: rssi))
+                }
+            }
+            availableWifiNetworks = parsed.sorted { $0.rssi > $1.rssi }
+            isScanningWifi = false
+            print("[BLEManager] Received \(availableWifiNetworks.count) Wi-Fi networks from controller")
+            return
+        }
+
         if json["DeviceName"] != nil {
             let settings = DeviceSettings.from(json: json)
             deviceSettings = settings
@@ -420,6 +474,12 @@ class BLEManager: NSObject, ObservableObject {
             rawADC: currentStatus?.rawADC,
             voltage: currentStatus?.voltage
         )
+        if !settings.deviceName.isEmpty {
+            connectedDeviceName = settings.deviceName
+            if let address = connectedPeripheral?.identifier.uuidString {
+                savePeripheral(address: address, name: settings.deviceName)
+            }
+        }
         settingsManager?.updateSimulationMode(settings.simulationMode)
         print("[BLEManager] Updated DeviceStatus from full settings, preserved debug values")
     }
@@ -529,6 +589,16 @@ extension BLEManager: CBCentralManagerDelegate {
             } else {
                 self.discoveredDevices.append(device)
             }
+
+            // If we are auto-connecting and discover our saved device, connect immediately
+            if self.connectionState != .connected, self.autoConnectTask != nil {
+                let saved = self.getSavedDevices()
+                if saved.first?.address == device.address ||
+                    (saved.contains(where: { $0.address == device.address }) && self.connectedPeripheral == nil) {
+                    print("[BLEManager] Discovered saved device \(device.name) during auto-connect, connecting immediately")
+                    self.connect(to: device)
+                }
+            }
         }
     }
 
@@ -537,13 +607,20 @@ extension BLEManager: CBCentralManagerDelegate {
             guard let self = self else { return }
             self.connectionTimer?.invalidate()
             self.connectionTimer = nil
+            self.autoConnectTask?.cancel()
+            self.autoConnectTask = nil
+            self.centralManager.stopScan()
+            self.isScanning = false
 
             self.connectionState = .connected
-            self.connectedDeviceName = peripheral.name ?? "Unknown Device"
+            let resolvedName = peripheral.name ?? self.connectedDeviceName ?? "esp32-AirUpDownController"
+            self.connectedDeviceName = resolvedName
             SoundManager.shared.playConnectionSound()
 
             if let device = self.discoveredDevices.first(where: { $0.peripheral.identifier == peripheral.identifier }) {
                 self.saveDevice(device)
+            } else {
+                self.savePeripheral(address: peripheral.identifier.uuidString, name: resolvedName)
             }
 
             peripheral.discoverServices([self.serviceUUID])
@@ -638,31 +715,39 @@ extension BLEManager {
     }
 
     func saveDevice(_ device: BLEDevice) {
-        var savedDevices = SavedDevice.load()
-        if savedDevices.count >= 2 {
-            if !savedDevices.contains(where: { $0.address == device.address }) {
-                return
-            }
-        }
+        savePeripheral(address: device.address, name: device.name)
+    }
 
-        if let index = savedDevices.firstIndex(where: { $0.address == device.address }) {
-            savedDevices[index].connectionPriority = 0
-            for i in savedDevices.indices where i != index {
-                savedDevices[i].connectionPriority = savedDevices[i].connectionPriority + 1
-            }
+    func savePeripheral(address: String, name: String) {
+        var savedDevices = SavedDevice.load()
+        let cleanName = name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "esp32-AirUpDownController" : name
+
+        if let index = savedDevices.firstIndex(where: { $0.address == address }) {
+            let existingCode = savedDevices[index].accessCode
+            savedDevices.remove(at: index)
+            let updated = SavedDevice(
+                name: cleanName,
+                address: address,
+                connectionPriority: 0,
+                accessCode: existingCode
+            )
+            savedDevices.insert(updated, at: 0)
         } else {
-            for i in savedDevices.indices {
-                savedDevices[i].connectionPriority += 1
-            }
             let saved = SavedDevice(
-                name: device.name,
-                address: device.address,
+                name: cleanName,
+                address: address,
                 connectionPriority: 0
             )
-            savedDevices.append(saved)
+            savedDevices.insert(saved, at: 0)
         }
 
-        SavedDevice.save(savedDevices)
+        // Keep the 2 most recently connected devices with normalized priorities 0 and 1
+        var topDevices = Array(savedDevices.prefix(2))
+        for i in topDevices.indices {
+            topDevices[i].connectionPriority = i
+        }
+
+        SavedDevice.save(topDevices)
     }
 
     func deleteDevice(_ address: String) {

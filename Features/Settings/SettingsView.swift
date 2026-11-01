@@ -358,6 +358,61 @@ struct DeviceSettingsView: View {
                     TextField(L("ssid", comment: ""), text: $wifiSsid)
                         .onChange(of: wifiSsid) { _ in hasUnsavedChanges = true }
 
+                    HStack(spacing: 10) {
+                        Menu {
+                            if bleManager.availableWifiNetworks.isEmpty {
+                                Text(L("no_devices_found_message", comment: ""))
+                            } else {
+                                ForEach(bleManager.availableWifiNetworks) { net in
+                                    Button {
+                                        wifiSsid = net.ssid
+                                        hasUnsavedChanges = true
+                                    } label: {
+                                        Label("\(net.ssid) (\(net.rssi) dBm)", systemImage: "wifi")
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "wifi")
+                                    .foregroundColor(AppColors.primary)
+                                Text(
+                                    bleManager.availableWifiNetworks.isEmpty
+                                        ? L("select_wifi_network", comment: "")
+                                        : "\(L("select_wifi_network", comment: "")) (\(bleManager.availableWifiNetworks.count))"
+                                )
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(AppColors.primaryLight)
+                                Spacer()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(AppColors.textSecondary)
+                            }
+                        }
+
+                        Button {
+                            bleManager.scanWifiNetworks(rescan: true)
+                        } label: {
+                            HStack(spacing: 4) {
+                                if bleManager.isScanningWifi {
+                                    ProgressView()
+                                        .scaleEffect(0.8)
+                                } else {
+                                    Image(systemName: "arrow.clockwise")
+                                }
+                                Text(L("scan_networks", comment: ""))
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(AppColors.primary)
+                            .cornerRadius(8)
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(bleManager.isScanningWifi)
+                    }
+
                     HStack {
                         if showWifiPassword {
                             TextField(L("wifi_password_keep_hint", comment: ""), text: $wifiPassword)
@@ -565,6 +620,7 @@ struct DeviceSettingsView: View {
                 bleManager.requestSettings()
             }
             loadCurrentSettings()
+            bleManager.scanWifiNetworks(rescan: false)
         }
         .onChange(of: bleManager.deviceSettings) { _ in
             if !hasUnsavedChanges && !isSaving {

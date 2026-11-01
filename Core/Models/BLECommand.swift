@@ -25,6 +25,7 @@ enum BLECommand {
     case requestStatus
     case debugMode(enabled: Bool)
     case authenticate(accessCode: String)
+    case scanWifi(rescan: Bool)
 
     static let cmdStop = 1
     static let cmdStart = 2
@@ -34,6 +35,7 @@ enum BLECommand {
     static let cmdGetSettings = 6
     static let cmdRequestStatus = 7
     static let cmdAuthenticate = 8
+    static let cmdScanWifi = 9
 
     func toJSONData() -> Data? {
         var dict: [String: Any]
@@ -107,6 +109,13 @@ enum BLECommand {
             dict = [
                 "command": BLECommand.cmdAuthenticate,
                 "accessCode": accessCode,
+                "type": "command"
+            ]
+
+        case .scanWifi(let rescan):
+            dict = [
+                "command": BLECommand.cmdScanWifi,
+                "rescan": rescan,
                 "type": "command"
             ]
         }
