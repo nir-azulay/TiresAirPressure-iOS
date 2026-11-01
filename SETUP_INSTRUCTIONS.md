@@ -27,31 +27,16 @@
 ### Project Configuration
 
 #### 1. Bundle Identifier
-- Current: `com.nazulay.tirepressuremanager`
+- Current: `com.NBApps.TirePressureManager`
 - Change in Project Settings > General > Identity
 
 #### 2. Development Team
 - Project Settings > Signing & Capabilities
-- Select your team from dropdown
+- Select your team from dropdown (`KQ74H35V49` by default)
 - Xcode will auto-generate provisioning profiles
 
-#### 3. App Icons (Required)
-The project includes placeholder app icon configuration. You need to add actual icon files:
-
-**Icon Sizes Needed:**
-- 20x20, 40x40, 60x60 (iPhone)
-- 29x29, 58x58, 87x87 (Settings)
-- 76x76, 152x152, 167x167 (iPad)
-- 1024x1024 (App Store)
-
-**Add Icons:**
-1. Open `App/Assets.xcassets/AppIcon.appiconset/`
-2. Drag icon files into Xcode Asset Catalog
-3. Ensure all sizes are filled
-
-#### 4. Launch Screen
-- Customize `Info.plist` launch screen settings
-- Or create custom `LaunchScreen.storyboard`
+#### 3. App Icons & Launch Screen
+App icons (`App/Assets.xcassets/AppIcon.appiconset/AppIcon.png`) and the launch image (`App/Assets.xcassets/LaunchImage.imageset/LaunchImage.png`) are pre-configured in the asset catalog.
 
 ### Dependencies & Frameworks
 
