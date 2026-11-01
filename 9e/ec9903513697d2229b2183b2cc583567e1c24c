@@ -1,0 +1,27 @@
+Features/Settings/SettingsView.swift
+  s_d312b23a5c97c7::t_37e68daa65a88b 517-533,567-568,577-580,582-583,590
+  s_d312b23a5c97c7::t_4058a8f34f6f61 171-175,187
+Core/BLE/BLEManager.swift
+  s_d312b23a5c97c7::t_5b2c453878bcb7 317-322
+  s_d312b23a5c97c7::t_7f796381193da0 423
+  s_d312b23a5c97c7::t_f27f3178e4bd0c 189-201
+  s_d312b23a5c97c7::t_196449ab4d4d88 234-235
+Core/Models/BLECommand.swift
+  s_d312b23a5c97c7::t_f17b0db49dd58d 65-68,71-72
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "9eec9903513697d2229b2183b2cc583567e1c24c",
+  "prompts": {},
+  "sessions": {
+    "s_d312b23a5c97c7": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "4073ab5b-854e-4e47-8475-abc551f21d7a",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
