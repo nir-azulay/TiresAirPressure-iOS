@@ -1,0 +1,21 @@
+fastlane/Fastfile
+  s_c6b8b716f084ae::t_bffdb191eb9a08 95-98,102,104
+fastlane/release_notes.txt
+  s_c6b8b716f084ae::t_f03e4aed732062 1-9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "fe8cfa348bed017e38e5d240b47037e6c115fb0f",
+  "prompts": {},
+  "sessions": {
+    "s_c6b8b716f084ae": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "522e06f5-c391-47e8-8a61-a9e7ff269c45",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
