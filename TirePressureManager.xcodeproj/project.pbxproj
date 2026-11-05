@@ -38,6 +38,9 @@
 		1A0010B5 /* connection_sound.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A0010B6 /* connection_sound.wav */; };
 		1A0010B7 /* target_reached_sound.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1A0010B8 /* target_reached_sound.wav */; };
 		1A0010C2 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1A0010C3 /* InfoPlist.strings */; };
+		1A0010D0 /* FirmwareUpgradeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0010D1 /* FirmwareUpgradeManager.swift */; };
+		1A0010D2 /* FirmwareUpgradeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0010D3 /* FirmwareUpgradeView.swift */; };
+		1A0010D4 /* FirmwarePackage in Resources */ = {isa = PBXBuildFile; fileRef = 1A0010D5 /* FirmwarePackage */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -88,6 +91,9 @@
 		1A0010B8 /* target_reached_sound.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = target_reached_sound.wav; sourceTree = "<group>"; };
 		1A0010C0 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		1A0010C1 /* he */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = he; path = he.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1A0010D1 /* FirmwareUpgradeManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeManager.swift; sourceTree = "<group>"; };
+		1A0010D3 /* FirmwareUpgradeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirmwareUpgradeView.swift; sourceTree = "<group>"; };
+		1A0010D5 /* FirmwarePackage */ = {isa = PBXFileReference; lastKnownFileType = folder; path = FirmwarePackage; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -195,6 +201,7 @@
 			children = (
 				1A001021 /* SettingsView.swift */,
 				1A001074 /* DeviceManagementView.swift */,
+				1A0010D3 /* FirmwareUpgradeView.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -221,6 +228,7 @@
 				1A00102A /* Localizable.strings */,
 				1A0010C3 /* InfoPlist.strings */,
 				1A0010B9 /* Sounds */,
+				1A0010D5 /* FirmwarePackage */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -251,6 +259,7 @@
 			children = (
 				1A00101B /* SettingsManager.swift */,
 				1A0010B4 /* SoundManager.swift */,
+				1A0010D1 /* FirmwareUpgradeManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -404,6 +413,7 @@
 				1A0010B5 /* connection_sound.wav in Resources */,
 				1A0010B7 /* target_reached_sound.wav in Resources */,
 				1A0010C2 /* InfoPlist.strings in Resources */,
+				1A0010D4 /* FirmwarePackage in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,6 +454,8 @@
 				1A001086 /* LoadingView.swift in Sources */,
 				1A0010B0 /* SplashView.swift in Sources */,
 				1A0010B3 /* SoundManager.swift in Sources */,
+				1A0010D0 /* FirmwareUpgradeManager.swift in Sources */,
+				1A0010D2 /* FirmwareUpgradeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

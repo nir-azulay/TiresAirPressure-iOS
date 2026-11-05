@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject var settingsManager: SettingsManager
     @EnvironmentObject var bleManager: BLEManager
+    @ObservedObject private var upgradeManager = FirmwareUpgradeManager.shared
     @Environment(\.dismiss) private var dismiss
 
     @State private var editDisplayMode: DisplayMode = .dark
@@ -12,6 +13,7 @@ struct SettingsView: View {
     @State private var editPresetPressures: [Double] = []
 
     @State private var showingDeviceSettings = false
+    @State private var showingFirmwareUpgrade = false
     @State private var showingResetAlert = false
     @State private var hasUnsavedChanges = false
 
@@ -72,6 +74,27 @@ struct SettingsView: View {
                                         .foregroundColor(AppColors.primary)
                                     Text(L("configure_device_settings", comment: ""))
                                     Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.secondary)
+                                }
+                            }
+                            .foregroundColor(.primary)
+
+                            Button(action: { showingFirmwareUpgrade = true }) {
+                                HStack {
+                                    Image(systemName: "cpu.fill")
+                                        .foregroundColor(AppColors.primary)
+                                    Text(L("firmware_upgrade_title", comment: "Firmware & File System"))
+                                    Spacer()
+                                    if upgradeManager.isUpdateAvailable {
+                                        Text(L("update_available_badge", comment: "Update Available"))
+                                            .font(.system(size: 11, weight: .bold))
+                                            .foregroundColor(AppColors.connectingAmber)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 3)
+                                            .background(AppColors.connectingAmber.opacity(0.18))
+                                            .cornerRadius(6)
+                                    }
                                     Image(systemName: "chevron.right")
                                         .foregroundColor(.secondary)
                                 }
@@ -156,6 +179,9 @@ struct SettingsView: View {
             .preferredColorScheme(.dark)
             .sheet(isPresented: $showingDeviceSettings) {
                 DeviceSettingsView()
+            }
+            .sheet(isPresented: $showingFirmwareUpgrade) {
+                FirmwareUpgradeView()
             }
             .alert(L("reset_to_defaults", comment: ""), isPresented: $showingResetAlert) {
                 Button(L("cancel", comment: ""), role: .cancel) { }
@@ -286,8 +312,10 @@ struct PresetPressuresSection: View {
 struct DeviceSettingsView: View {
     @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var upgradeManager = FirmwareUpgradeManager.shared
     @Environment(\.dismiss) private var dismiss
 
+    @State private var showingFirmwareUpgrade = false
     @State private var softwareVersion: String = ""
     @State private var ipAddress: String = ""
     @State private var deviceName: String = ""
@@ -328,6 +356,28 @@ struct DeviceSettingsView: View {
                                 Text(L("firmware_version", comment: ""))
                                 Spacer()
                                 Text(softwareVersion)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        Button {
+                            showingFirmwareUpgrade = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                                    .foregroundColor(AppColors.primary)
+                                Text(L("firmware_upgrade_title", comment: "Firmware & File System"))
+                                    .foregroundColor(.white)
+                                Spacer()
+                                if upgradeManager.isUpdateAvailable {
+                                    Text(L("update_available_badge", comment: "Update Available"))
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundColor(AppColors.connectingAmber)
+                                        .padding(.horizontal, 8)
+                                        .padding(.vertical, 3)
+                                        .background(AppColors.connectingAmber.opacity(0.18))
+                                        .cornerRadius(6)
+                                }
+                                Image(systemName: "chevron.right")
                                     .foregroundColor(.secondary)
                             }
                         }
@@ -597,6 +647,9 @@ struct DeviceSettingsView: View {
                 Button(L("discard", comment: ""), role: .destructive) { dismiss() }
             } message: {
                 Text(L("unsaved_changes_warning", comment: ""))
+            }
+            .sheet(isPresented: $showingFirmwareUpgrade) {
+                FirmwareUpgradeView()
             }
             .overlay {
                 if isSaving {

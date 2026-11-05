@@ -1,2 +1,3 @@
 CFBundleDisplayName = "ניהול לחץ אוויר בצמיגים";
 CFBundleName = "ניהול לחץ אוויר בצמיגים";
+NSLocalNetworkUsageDescription = "גישה לרשת המקומית משמשת לחיבור לבקר לחץ האוויר דרך Wi-Fi לצורך עדכון קושחה, קבצים סטטיים ו-settings.json.";

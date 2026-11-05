@@ -58,6 +58,8 @@
 	<string>This app needs Bluetooth access to communicate with tire pressure monitoring devices.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Location permission is required for Bluetooth device scanning to find tire pressure monitoring devices nearby.</string>
+	<key>NSLocalNetworkUsageDescription</key>
+	<string>Local network access is used to connect to your tire pressure controller over Wi-Fi for firmware, static file, and settings.json updates.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

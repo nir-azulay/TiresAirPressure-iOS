@@ -32,12 +32,13 @@ final class SettingsManagerTests: XCTestCase {
     }
 
     func testAddPresetPressure() {
-        let initialCount = sut.presetPressures.count
+        sut.removePresetPressure(40.0)
+        let countAfterRemove = sut.presetPressures.count
         let newPressure = 45.0
 
         sut.addPresetPressure(newPressure)
 
-        XCTAssertEqual(sut.presetPressures.count, initialCount + 1)
+        XCTAssertEqual(sut.presetPressures.count, countAfterRemove + 1)
         XCTAssertTrue(sut.presetPressures.contains(newPressure))
         XCTAssertTrue(sut.presetPressures.isSorted())
     }
@@ -52,13 +53,12 @@ final class SettingsManagerTests: XCTestCase {
     }
 
     func testRemovePresetPressure() {
-        let pressureToRemove = 50.0
-        sut.addPresetPressure(pressureToRemove)
-        let countWithNew = sut.presetPressures.count
+        let pressureToRemove = 38.0
+        let initialCount = sut.presetPressures.count
 
         sut.removePresetPressure(pressureToRemove)
 
-        XCTAssertEqual(sut.presetPressures.count, countWithNew - 1)
+        XCTAssertEqual(sut.presetPressures.count, initialCount - 1)
         XCTAssertFalse(sut.presetPressures.contains(pressureToRemove))
     }
 
@@ -125,6 +125,125 @@ final class SettingsManagerTests: XCTestCase {
             XCTAssertFalse(language.displayText.isEmpty)
             XCTAssertFalse(language.localeIdentifier.isEmpty)
         }
+    }
+
+    func testFirmwareVersionComparison() {
+        // Newer build number -> true
+        XCTAssertTrue(
+            FirmwareUpgradeManager.isBundledVersionNewer(
+                bundled: "v1.0.261102_267",
+                device: "v1.0.261101_256"
+            )
+        )
+        // Same version -> false
+        XCTAssertFalse(
+            FirmwareUpgradeManager.isBundledVersionNewer(
+                bundled: "v1.0.261102_267",
+                device: "v1.0.261102_267"
+            )
+        )
+        // Older bundled build -> false
+        XCTAssertFalse(
+            FirmwareUpgradeManager.isBundledVersionNewer(
+                bundled: "v1.0.261101_250",
+                device: "v1.0.261102_267"
+            )
+        )
+        // Legacy version without build number -> true
+        XCTAssertTrue(
+            FirmwareUpgradeManager.isBundledVersionNewer(
+                bundled: "v1.0.261102_267",
+                device: "2.00"
+            )
+        )
+    }
+
+    func testSettingsJsonMigrationPreservesValuesAndFixesSchema() throws {
+        let defaultSchema: [String: Any] = [
+            "DeviceName": "esp32-AirUpDownController",
+            "wifissid": "",
+            "wifipassword": "",
+            "RelayCompressorPin": 16,
+            "RelayFreePin": 17,
+            "SensorPin": 34,
+            "MaxSecForStatus": 10,
+            "SensorValueAt0PSI": 410,
+            "SensorValueAt50PSI": 3400,
+            "AccessCode": "",
+            "MessureWait": 1,
+            "Precision": 0.5,
+            "SimulationMode": false,
+            "PressureCalcMethod": 1,
+            "MaxPressurePSI": 50,
+            "MaxValveOpenSec": 120,
+            "SensorFullScalePSI": 50,
+            "AccessPointPassword": "12345678"
+        ]
+        let defaultSchemaData = try JSONSerialization.data(withJSONObject: defaultSchema, options: [])
+
+        // Simulate an older device settings.json with custom user values,
+        // missing newer keys (MaxValveOpenSec, SensorFullScalePSI, AccessPointPassword, AccessCode),
+        // and having deprecated keys (BTPinCode, BLESecurityEnabled, AutoStart).
+        let legacyDeviceJSON: [String: Any] = [
+            "DeviceName": "Raptor-Air-MNG",
+            "wifissid": "TrailNet",
+            "wifipassword": "secretPassword",
+            "RelayCompressorPin": 17,
+            "RelayFreePin": 16,
+            "SensorPin": 32,
+            "MaxSecForStatus": 25,
+            "SensorValueAt0PSI": 0.321,
+            "SensorValueAt50PSI": 3.14,
+            "MessureWait": 1.5,
+            "Precision": 0.3,
+            "SimulationMode": false,
+            "PressureCalcMethod": 2,
+            "MaxPressurePSI": 60,
+            "BTPinCode": "9988",
+            "BLESecurityEnabled": true,
+            "AutoStart": true
+        ]
+        let legacyData = try JSONSerialization.data(withJSONObject: legacyDeviceJSON, options: [])
+
+        let result = try FirmwareUpgradeManager.migrateSettingsJSON(
+            currentJSONData: legacyData,
+            fallbackDeviceSettings: nil,
+            defaultSchemaData: defaultSchemaData
+        )
+
+        // Deprecated keys removed
+        XCTAssertEqual(result.removedKeys, ["AutoStart", "BLESecurityEnabled", "BTPinCode"])
+        // Missing keys added with defaults (AccessCode was migrated from BTPinCode so it counts as retained)
+        XCTAssertEqual(result.addedKeys, ["AccessPointPassword", "MaxValveOpenSec", "SensorFullScalePSI"])
+
+        let migratedObj = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: result.migratedJSONData, options: []) as? [String: Any]
+        )
+
+        // Existing user settings preserved
+        XCTAssertEqual(migratedObj["DeviceName"] as? String, "Raptor-Air-MNG")
+        XCTAssertEqual(migratedObj["wifissid"] as? String, "TrailNet")
+        XCTAssertEqual(migratedObj["RelayCompressorPin"] as? Int, 17)
+        XCTAssertEqual(migratedObj["SensorPin"] as? Int, 32)
+        XCTAssertEqual(migratedObj["PressureCalcMethod"] as? Int, 2)
+        // Legacy BTPinCode migrated into AccessCode
+        XCTAssertEqual(migratedObj["AccessCode"] as? String, "9988")
+        // Added defaults populated
+        XCTAssertEqual(migratedObj["MaxValveOpenSec"] as? Int, 120)
+        XCTAssertEqual(migratedObj["SensorFullScalePSI"] as? Int, 50)
+        XCTAssertEqual(migratedObj["AccessPointPassword"] as? String, "12345678")
+        // Deprecated keys absent
+        XCTAssertNil(migratedObj["BTPinCode"])
+        XCTAssertNil(migratedObj["BLESecurityEnabled"])
+        XCTAssertNil(migratedObj["AutoStart"])
+    }
+
+    func testBundledFirmwareManifestIsPresent() {
+        let manager = FirmwareUpgradeManager.shared
+        XCTAssertNotNil(manager.manifest)
+        XCTAssertFalse(manager.bundledVersion.isEmpty)
+        XCTAssertEqual(manager.manifest?.requiredSettingsKeys.count, 18)
+        XCTAssertFalse(manager.manifest?.staticFiles.isEmpty ?? true)
     }
 }
 

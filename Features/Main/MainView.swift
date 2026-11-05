@@ -6,6 +6,7 @@ struct MainView: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject var bleManager: BLEManager
     @EnvironmentObject var settingsManager: SettingsManager
+    @ObservedObject private var upgradeManager = FirmwareUpgradeManager.shared
     @State private var targetPressure: Double = 30.0
     @State private var showTargetReachedAlert = false
     @State private var targetReachedInfo: (target: Double, current: Double)?
@@ -15,6 +16,7 @@ struct MainView: View {
     @State private var showAbout = false
     @State private var showConnection = false
     @State private var showDeviceManagement = false
+    @State private var showFirmwareUpgrade = false
     @State private var animatedPressure: Double = 0.0
     @State private var accessCodeInput: String = ""
 
@@ -30,6 +32,14 @@ struct MainView: View {
                     VStack(spacing: 14) {
                         if bleManager.connectionState.isConnected {
                             ConnectionStatusCard()
+                            if upgradeManager.shouldSuggestUpdate {
+                                FirmwareUpdateSuggestionBanner(
+                                    deviceVersion: upgradeManager.deviceVersion,
+                                    bundledVersion: upgradeManager.bundledVersion,
+                                    onUpgrade: { showFirmwareUpgrade = true },
+                                    onDismiss: { upgradeManager.dismissUpdateSuggestion() }
+                                )
+                            }
                             PressureGaugeCard(
                                 currentPressure: animatedPressure,
                                 targetPressure: targetPressure,
@@ -121,6 +131,9 @@ struct MainView: View {
             }
             .sheet(isPresented: $showConnection) {
                 ConnectionView()
+            }
+            .sheet(isPresented: $showFirmwareUpgrade) {
+                FirmwareUpgradeView()
             }
         }
         .onAppear {
@@ -219,6 +232,69 @@ struct MainView: View {
 }
 
 // MARK: - Connection Status Card
+struct FirmwareUpdateSuggestionBanner: View {
+    let deviceVersion: String
+    let bundledVersion: String
+    let onUpgrade: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "arrow.triangle.2.circlepath.circle.fill")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(AppColors.primaryLight)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(L("firmware_update_available_title", comment: "Controller Firmware Update Available"))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+
+                    Text(String(format: L("firmware_update_available_message_format", comment: ""), deviceVersion, bundledVersion))
+                        .font(.system(size: 12))
+                        .foregroundColor(AppColors.textSecondary)
+                }
+
+                Spacer()
+
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(AppColors.textSecondary)
+                        .padding(6)
+                }
+            }
+
+            HStack(spacing: 10) {
+                Button(action: onUpgrade) {
+                    Text(L("upgrade_now_button", comment: "Upgrade Now"))
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(AppColors.primary)
+                        .cornerRadius(8)
+                }
+
+                Button(action: onDismiss) {
+                    Text(L("later_button", comment: "Later"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(AppColors.textSecondary)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                }
+            }
+        }
+        .padding(14)
+        .background(AppColors.primary.opacity(0.14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(AppColors.primary.opacity(0.6), lineWidth: 1)
+        )
+        .cornerRadius(12)
+    }
+}
+
 struct ConnectionStatusCard: View {
     @EnvironmentObject var bleManager: BLEManager
 

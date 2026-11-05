@@ -1,2 +1,3 @@
 CFBundleDisplayName = "Tires Air Pressure Manager";
 CFBundleName = "Tires Air Pressure Manager";
+NSLocalNetworkUsageDescription = "Local network access is used to connect to your tire pressure controller over Wi-Fi for firmware, static file, and settings.json updates.";
