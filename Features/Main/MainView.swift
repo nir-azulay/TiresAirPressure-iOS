@@ -84,11 +84,14 @@ struct MainView: View {
                         Text(L("app_name", comment: ""))
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.65)
                     }
                 }
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     Button { showSettings = true } label: {
                         Image(systemName: "gearshape.fill")
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white.opacity(0.9))
                     }
                     Button {
@@ -97,10 +100,12 @@ struct MainView: View {
                         showConnection = true
                     } label: {
                         Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white.opacity(0.9))
                     }
                     Button { showAbout = true } label: {
                         Image(systemName: "info.circle.fill")
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.white.opacity(0.9))
                     }
                 }
@@ -231,12 +236,15 @@ struct ConnectionStatusCard: View {
             Text(bleManager.connectionState.displayText)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(connectionColor)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
 
             if let name = bleManager.connectedDeviceName, bleManager.connectionState == .connected {
                 Text("• \(name)")
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(.white.opacity(0.85))
                     .lineLimit(1)
+                    .minimumScaleFactor(0.75)
             }
             Spacer()
         }
@@ -279,6 +287,17 @@ struct PressureGaugeCard: View {
     let debugMode: Bool
     let deviceStatus: DeviceStatus?
 
+    /// Width of this card. The dial and readout scale down on a narrow phone
+    /// (iPhone 17 Pro, Display Zoom) and stay at the designed size on Pro Max.
+    @State private var cardWidth: CGFloat = 0
+
+    private var gaugeSize: CGFloat {
+        let width = cardWidth > 0 ? cardWidth : 360
+        return min(144, max(108, width * 0.40))
+    }
+
+    private var typeScale: CGFloat { gaugeSize / 144 }
+
     private var activeAccentColor: Color {
         if !isInflating {
             if abs(currentPressure - targetPressure) <= 0.5 && currentPressure > 0 {
@@ -290,32 +309,42 @@ struct PressureGaugeCard: View {
     }
 
     var body: some View {
+        let gauge = gaugeSize
+        let scale = typeScale
+
         HStack(spacing: 8) {
             // Left side - Live Readout & Delta
             VStack(alignment: .leading, spacing: 6) {
                 Text(L("current_pressure", comment: "").uppercased())
-                    .font(.system(size: 11, weight: .bold))
+                    .font(.system(size: 11 * scale, weight: .bold))
                     .tracking(1.0)
                     .foregroundColor(AppColors.textSecondary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
 
                 HStack(alignment: .firstTextBaseline, spacing: 6) {
                     Text(String(format: "%.1f", currentPressure))
-                        .font(.system(size: 46, weight: .black, design: .rounded))
+                        .font(.system(size: 46 * scale, weight: .black, design: .rounded))
                         .foregroundColor(.white)
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
 
                     Text("PSI")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .font(.system(size: 15 * scale, weight: .bold, design: .rounded))
                         .foregroundColor(activeAccentColor)
+                        .lineLimit(1)
                 }
 
                 // Delta pill
                 let delta = targetPressure - currentPressure
                 HStack(spacing: 4) {
                     Image(systemName: abs(delta) <= 0.5 ? "checkmark.circle.fill" : (delta > 0 ? "arrow.up.right" : "arrow.down.right"))
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.system(size: 11 * scale, weight: .bold))
                     Text(abs(delta) <= 0.5 ? L("at_target", comment: "") : String(format: L("psi_to_target_format", comment: ""), delta))
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 12 * scale, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
                 .foregroundColor(abs(delta) <= 0.5 ? AppColors.connectedGreen : (delta > 0 ? AppColors.inflateBlue : AppColors.primaryLight))
                 .padding(.horizontal, 10)
@@ -328,12 +357,12 @@ struct PressureGaugeCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         if let rawADC = status.rawADC {
                             Text("ADC: \(rawADC)")
-                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .font(.system(size: 11 * scale, weight: .medium, design: .monospaced))
                                 .foregroundColor(AppColors.debugYellow)
                         }
                         if let voltage = status.voltage {
                             Text(String(format: "V: %.3f V", voltage))
-                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .font(.system(size: 11 * scale, weight: .medium, design: .monospaced))
                                 .foregroundColor(AppColors.debugYellow)
                         }
                     }
@@ -354,22 +383,22 @@ struct PressureGaugeCard: View {
                     let isMajor = tick % 5 == 0
                     Rectangle()
                         .fill(Double(tick) / 20.0 <= progress ? activeAccentColor : Color.white.opacity(isMajor ? 0.35 : 0.15))
-                        .frame(width: isMajor ? 2.5 : 1.5, height: isMajor ? 8 : 5)
-                        .offset(y: -64)
+                        .frame(width: (isMajor ? 2.5 : 1.5) * scale, height: (isMajor ? 8 : 5) * scale)
+                        .offset(y: -64 * scale)
                         .rotationEffect(.degrees(-135 + Double(tick) * 13.5))
                 }
 
                 // Background 270° Track
                 Circle()
                     .trim(from: 0, to: 0.75)
-                    .stroke(Color.white.opacity(0.1), style: StrokeStyle(lineWidth: 14, lineCap: .round))
+                    .stroke(Color.white.opacity(0.1), style: StrokeStyle(lineWidth: 14 * scale, lineCap: .round))
                     .rotationEffect(.degrees(135))
 
                 // Target pressure inner 270° arc
                 Circle()
                     .trim(from: 0, to: targetProgress * 0.75)
-                    .stroke(AppColors.primaryLight.opacity(0.45), style: StrokeStyle(lineWidth: 6, lineCap: .round))
-                    .padding(11)
+                    .stroke(AppColors.primaryLight.opacity(0.45), style: StrokeStyle(lineWidth: 6 * scale, lineCap: .round))
+                    .padding(11 * scale)
                     .rotationEffect(.degrees(135))
                     .animation(.easeInOut(duration: 0.25), value: targetPressure)
 
@@ -383,7 +412,7 @@ struct PressureGaugeCard: View {
                             startAngle: .degrees(135),
                             endAngle: .degrees(405)
                         ),
-                        style: StrokeStyle(lineWidth: 14, lineCap: .round)
+                        style: StrokeStyle(lineWidth: 14 * scale, lineCap: .round)
                     )
                     .rotationEffect(.degrees(135))
                     .shadow(color: activeAccentColor.opacity(0.5), radius: 6)
@@ -392,22 +421,32 @@ struct PressureGaugeCard: View {
                 // Center Target Display
                 VStack(spacing: 2) {
                     Text(L("target_short", comment: ""))
-                        .font(.system(size: 10, weight: .bold))
+                        .font(.system(size: 10 * scale, weight: .bold))
                         .tracking(0.8)
                         .foregroundColor(AppColors.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Text(String(format: "%.1f", targetPressure))
-                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .font(.system(size: 24 * scale, weight: .heavy, design: .rounded))
                         .foregroundColor(AppColors.primaryLight)
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                     Text("PSI")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(.system(size: 10 * scale, weight: .semibold))
                         .foregroundColor(AppColors.textSecondary)
                 }
             }
-            .frame(width: 144, height: 144)
+            .frame(width: gauge, height: gauge)
             .padding(8)
         }
         .padding(12)
+        .background(
+            GeometryReader { geo in
+                Color.clear.preference(key: CardWidthKey.self, value: geo.size.width)
+            }
+        )
+        .onPreferenceChange(CardWidthKey.self) { cardWidth = $0 }
         .background(AppColors.cardBackground)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
@@ -462,10 +501,14 @@ struct TargetPressureCard: View {
                         .font(.system(size: 34, weight: .black, design: .rounded))
                         .foregroundColor(AppColors.primaryLight)
                         .monospacedDigit()
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
                     Text("PSI")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
                         .foregroundColor(AppColors.textSecondary)
+                        .lineLimit(1)
                 }
+                .layoutPriority(1)
 
                 Spacer()
 
@@ -525,9 +568,13 @@ struct PresetButtons: View {
                                     VStack(spacing: 1) {
                                         Text(String(format: "%.0f", pressure))
                                             .font(.system(size: 18, weight: .heavy, design: .rounded))
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.6)
                                         Text("PSI")
                                             .font(.system(size: 10, weight: .bold))
                                             .opacity(0.8)
+                                            .lineLimit(1)
+                                            .minimumScaleFactor(0.7)
                                     }
                                     .foregroundColor(isSelected ? AppColors.presetButtonActiveText : AppColors.presetButtonText)
                                     .frame(maxWidth: .infinity)
@@ -912,6 +959,15 @@ struct TargetReachedCelebrationView: View {
                 glowPulse = true
             }
         }
+    }
+}
+
+// MARK: - Card width
+
+private struct CardWidthKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 

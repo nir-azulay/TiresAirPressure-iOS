@@ -57,7 +57,7 @@ struct SettingsView: View {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(L("manage_paired_devices", comment: "Manage Paired Devices"))
                                     Text(L("manage_paired_devices_description", comment: "Description"))
-                                        .font(.caption)
+                                        .font(.system(size: 12))
                                         .foregroundColor(.secondary)
                                 }
                             }
@@ -100,6 +100,7 @@ struct SettingsView: View {
                         }
                     }
                 }
+                .font(.system(size: 17))
                 .scrollContentBackground(.hidden)
                 .background(AppColors.background)
 
@@ -107,7 +108,7 @@ struct SettingsView: View {
                 VStack(spacing: 8) {
                     if hasUnsavedChanges {
                         Text(L("unsaved_changes_message", comment: ""))
-                            .font(.caption)
+                            .font(.system(size: 12))
                             .foregroundColor(AppColors.primaryLight)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 16)
@@ -267,7 +268,7 @@ struct PresetPressuresSection: View {
         }
 
         Text(String(format: L("presets_count", comment: ""), presetPressures.count, maxPressureCount))
-            .font(.caption)
+            .font(.system(size: 12))
             .foregroundColor(.secondary)
     }
 
@@ -566,6 +567,7 @@ struct DeviceSettingsView: View {
                     }
                 }
             }
+            .font(.system(size: 17))
             .scrollContentBackground(.hidden)
             .background(AppColors.background)
             .navigationTitle(L("device_configuration", comment: ""))
@@ -605,7 +607,7 @@ struct DeviceSettingsView: View {
                                 ProgressView()
                                     .scaleEffect(1.5)
                                 Text(L("saving_restarting", comment: ""))
-                                    .font(.headline)
+                                    .font(.system(size: 17, weight: .semibold))
                                     .foregroundColor(.white)
                             }
                             .padding(32)

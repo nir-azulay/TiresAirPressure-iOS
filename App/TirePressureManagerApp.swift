@@ -24,6 +24,9 @@ struct TirePressureManagerApp: App {
             .onAppear {
                 bleManager.setSettingsManager(settingsManager)
             }
+            // The gauge, presets, and stop control are a fixed instrument layout.
+            // Ignore Settings → Text Size so larger system text cannot overflow them.
+            .dynamicTypeSize(.large)
             .preferredColorScheme(.dark)
         }
     }

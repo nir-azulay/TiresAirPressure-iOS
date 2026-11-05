@@ -16,7 +16,7 @@ struct LoadingView: View {
                 .scaleEffect(1.5)
 
             Text(message.localized)
-                .font(.headline)
+                .font(.system(size: 17, weight: .semibold))
                 .foregroundColor(showBackground ? .white : .primary)
         }
         .padding(32)

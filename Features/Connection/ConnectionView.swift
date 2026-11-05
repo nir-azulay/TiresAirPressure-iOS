@@ -27,6 +27,7 @@ struct ConnectionView: View {
                     Button(L("close", comment: "Close")) {
                         dismiss()
                     }
+                    .font(.system(size: 17, weight: .semibold))
                     .foregroundColor(AppColors.primaryLight)
                 }
             }

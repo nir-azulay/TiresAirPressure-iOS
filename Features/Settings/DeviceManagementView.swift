@@ -110,11 +110,11 @@ struct EmptyDevicesView: View {
                 .foregroundColor(AppColors.primary.opacity(0.8))
 
             Text(L("no_paired_devices", comment: "No Paired Devices"))
-                .font(.title3.bold())
+                .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
 
             Text(L("no_paired_devices_description", comment: "No paired devices description"))
-                .font(.subheadline)
+                .font(.system(size: 15))
                 .foregroundColor(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
