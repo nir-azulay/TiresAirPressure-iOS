@@ -1,0 +1,40 @@
+Features/Main/MainView.swift
+  s_8a297305c5de68::t_6efd814787022a 504-505,509,511
+  s_8a297305c5de68::t_51a763418c3c76 965-973
+  s_8a297305c5de68::t_bf5173b32d14d6 239-240,247
+  s_8a297305c5de68::t_be45f5b307a9ed 571-572,576-577
+  s_8a297305c5de68::t_35b2a236cc7869 87-88
+  s_8a297305c5de68::t_b5adbd8c5ff1c5 94,103,108
+  s_8a297305c5de68::t_d1a7937a348cba 290-300
+  s_8a297305c5de68::t_504269f126a3af 312-314,319,322-323,327,330-331,334,336,343,345-347,360,365,386-387,394,400-401,415,424,427-428,430,433-434,436,440,444-449
+UI/Components/LoadingView.swift
+  s_8a297305c5de68::t_9b1b20140ec778 19
+App/TirePressureManagerApp.swift
+  s_8a297305c5de68::t_881c8475c0d742 27-29
+Features/Settings/DeviceManagementView.swift
+  s_8a297305c5de68::t_c94d582d8b4325 113
+  s_8a297305c5de68::t_bba94b5d931d59 117
+Features/Connection/ConnectionView.swift
+  s_8a297305c5de68::t_bef25acde5d4b6 30
+Features/Settings/SettingsView.swift
+  s_8a297305c5de68::t_ab4ba319ab5064 103
+  s_8a297305c5de68::t_9e20e65ee62220 570
+  s_8a297305c5de68::t_fa5652852fc8f0 60,111,271
+  s_8a297305c5de68::t_6d6135148fbedf 610
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "f0f3d6202b782b88d7c161f26b156005178731bf",
+  "prompts": {},
+  "sessions": {
+    "s_8a297305c5de68": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "66286c43-ccd4-44ad-8e32-9f73f2cf029a",
+        "model": "grok-4.7"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
