@@ -1,0 +1,9 @@
+What's New in v2.2.0 (Controller Firmware v1.0.261105_270):
+• Automatic BLE Controller Firmware Check: Detects when a connected ESP32 controller is running older firmware and suggests an upgrade on the main screen.
+• In-App Wi-Fi OTA Upgrade & Maintenance Screen:
+  - Full Upgrade (1-Tap): Migrates settings.json, uploads all SPIFFS Web UI files, flashes firmware.bin, and reboots the controller.
+  - Firmware Only: Flashes bundled firmware.bin over Wi-Fi.
+  - SPIFFS Static Files Only: Updates all bundled HTML/CSS/JS Web UI files without touching settings.json.
+  - Fix & Migrate settings.json Only: Preserves your existing calibration, GPIO pins, Wi-Fi, and passwords while adding new schema keys and removing deprecated ones.
+• Automatic Simulation Mode Guard during OTA to prevent sensor read interruptions while flashing.
+• Full English and Hebrew localization.

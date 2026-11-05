@@ -92,11 +92,16 @@ platform :ios do
       export_options: export_options
     )
 
+    release_notes_path = File.expand_path("release_notes.txt", __dir__)
+    changelog_text = File.exist?(release_notes_path) ? File.read(release_notes_path).strip : nil
+    has_changelog = !(changelog_text.nil? || changelog_text.empty?)
+
     upload_to_testflight(
       api_key: api_key,
       ipa: File.join(OUTPUT_DIR, IPA_NAME),
+      changelog: (changelog_text if has_changelog),
       distribute_external: false,
-      skip_waiting_for_build_processing: true
+      skip_waiting_for_build_processing: !has_changelog
     )
   end
 end
