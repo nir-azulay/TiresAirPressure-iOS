@@ -1,0 +1,23 @@
+App/Info.plist
+  s_c6b8b716f084ae::t_887f097a2a1fd3 37
+README.md
+  s_c6b8b716f084ae::t_aa60c54075e88d 1
+TirePressureManager.xcodeproj/project.pbxproj
+  s_c6b8b716f084ae::t_284d5084bab107 590,630
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "b79ff4658b6b3e8856cdb8926bad585aaabb4b0e",
+  "prompts": {},
+  "sessions": {
+    "s_c6b8b716f084ae": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "522e06f5-c391-47e8-8a61-a9e7ff269c45",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
