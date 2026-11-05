@@ -1,0 +1,85 @@
+Resources/he.lproj/InfoPlist.strings
+  s_c6b8b716f084ae::t_e8b155427b732c 3
+Resources/FirmwarePackage/manifest.json
+  s_c6b8b716f084ae::t_c65b772e1647d6 1,5,8-35,39-45,49-55,59-66
+  s_c6b8b716f084ae::t_4ac3bab1aac0bc 36-38,46-48,56-58
+  s_c6b8b716f084ae::t_e64486e9a2962b 2-4,6-7
+Features/Settings/SettingsView.swift
+  s_c6b8b716f084ae::t_42c7b3f03fa87f 6,16
+  s_c6b8b716f084ae::t_96590d42deffa5 183-185
+  s_c6b8b716f084ae::t_21d3933f8e13dd 83-103
+  s_c6b8b716f084ae::t_d220db5092a600 315,318
+  s_c6b8b716f084ae::t_da314c4815316f 651-653
+  s_c6b8b716f084ae::t_dab0f692ca6163 362-383
+App/Info.plist
+  s_c6b8b716f084ae::t_8d5f57847f4f75 61-62
+Resources/en.lproj/InfoPlist.strings
+  s_c6b8b716f084ae::t_fa11ff115fdd38 3
+Features/Settings/FirmwareUpgradeView.swift
+  s_c6b8b716f084ae::t_cdf388826f4e92 5,52-58,99-111,113-144,234,240,287,289-294,299,309
+  s_c6b8b716f084ae::t_9b3c58fa9a7af0 1,3-4,6-11,13-37,39-51,64-83,112,145-231,235-239,241-245,253-259,261-278,280-286,288,295-298,300-308,310-531
+  s_c6b8b716f084ae::t_a6a7615ad31b9e 2,12,38,59-63,84-98,232-233,246-252,260,279
+Core/Services/FirmwareUpgradeManager.swift
+  s_c6b8b716f084ae::t_14b9293330b21f 868-869,898-901
+  s_c6b8b716f084ae::t_40c1283c804ecd 94-100,119-120,124-125,196-201,409,412-413,421,424-426,430,432-438,440-446,486-487,492,514,516-517,519-522,526,547-548,556-558,561-566,576-582,589,768,877-878,880-885,893,895-896
+  s_c6b8b716f084ae::t_5783dd1b87e7b4 294-295,307-310
+  s_c6b8b716f084ae::t_70ee574f1db386 1063-1067,1085,1087,1089
+  s_c6b8b716f084ae::t_4b6bdb8df65b28 591-599,602-616,623-643,650-653,662-673,690-709,711-740,745-750,760-765,769-770
+  s_c6b8b716f084ae::t_987474d20171a1 1-2,5-93,101-118,121-123,126-195,202,206-208,210-219,221-236,238-271,273-293,296-306,311-361,371-408,411,414,418,447-450,456-470,477,483-485,523-524,527-532,567-575,583-588,590,600-601,618-619,621-622,645-646,648-649,654-658,660-661,674-682,684-688,710,741-744,751-759,766-767,771-788,790-791,793-821,823-824,826-827,830-850,853-864,871,873-874,886-887,925-930,935-945,947-948,961-979,1146,1151,1167,1195,1216,1271-1272
+  s_c6b8b716f084ae::t_b2d46f8404a764 497-508
+  s_c6b8b716f084ae::t_bc024e5385ebf2 1017-1062,1068-1084,1086,1088,1093-1106
+  s_c6b8b716f084ae::t_f46ddcbfa775e3 3,203-205,209,220,237,410,415-417,419-420,422-423,427-429,431,439,451-455,525,533-546,549-555,559-560,620,647,659,683,689,789,822,828,872,889-890,897,902,911,924,1269
+  s_c6b8b716f084ae::t_70b5ca6e93fd00 4,272,471-476,478-482,488-491,493-496,509-513,515,518,617,644,792,825,829,851-852,865-867,870,875-876,879,888,891-892,894,903-910,912-923,931-934,946,949-960,980-1016,1090-1092,1107-1145,1147-1150,1152-1166,1168-1194,1196-1215,1217-1268,1270
+  s_c6b8b716f084ae::t_e23a9bc97eaa27 362-370
+Tests/TirePressureManagerTests/SettingsManagerTests.swift
+  s_c6b8b716f084ae::t_f5896708a0f30c 240-247
+  s_c6b8b716f084ae::t_5d7a6f162aba90 35-36,41,56-57,61
+  s_c6b8b716f084ae::t_843f237227c0ad 129-239
+Features/Main/MainView.swift
+  s_c6b8b716f084ae::t_07d36e345f54e2 9,19
+  s_c6b8b716f084ae::t_137c822439aa91 35-42
+  s_c6b8b716f084ae::t_a8ed54ce22303d 135-137
+  s_c6b8b716f084ae::t_09e0e1c4070bcb 235-297
+Resources/en.lproj/Localizable.strings
+  s_c6b8b716f084ae::t_9630c5900dba2b 267-281,289-330
+  s_c6b8b716f084ae::t_2f21625689824c 282-288
+Resources/he.lproj/Localizable.strings
+  s_c6b8b716f084ae::t_4d7c5b5c052cab 267-281,289-330
+  s_c6b8b716f084ae::t_99ee9c8a635080 282-288
+TirePressureManager.xcodeproj/project.pbxproj
+  s_c6b8b716f084ae::t_5dee13fc158852 94-96
+  s_c6b8b716f084ae::t_e43205ed7e4adf 262
+  s_c6b8b716f084ae::t_93226fdbca7df3 41-43
+  s_c6b8b716f084ae::t_18cb55e3ca402e 231
+  s_c6b8b716f084ae::t_37959adcf5178f 457-458
+  s_c6b8b716f084ae::t_6ecb1ed38ed442 416
+  s_c6b8b716f084ae::t_b14d1a3a270154 204
+Resources/FirmwarePackage/default_settings.json
+  s_c6b8b716f084ae::t_9c8c73e540d77a 1-20
+Resources/FirmwarePackage/spiffs/about.html
+  s_c6b8b716f084ae::t_6c676384422d62 1-95
+Resources/FirmwarePackage/spiffs/configurations.html
+  s_c6b8b716f084ae::t_996ac1e42028d4 1-306
+Resources/FirmwarePackage/spiffs/fs.html
+  s_c6b8b716f084ae::t_f3e5ffdf3a340b 1-113
+Resources/FirmwarePackage/spiffs/index.html
+  s_c6b8b716f084ae::t_731dd8bbef7d3e 1-36
+Resources/FirmwarePackage/spiffs/update.html
+  s_c6b8b716f084ae::t_a9f40fb9355c91 1-104
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "43bd13270460eb4f2bea179506fd1842a4634c9c",
+  "prompts": {},
+  "sessions": {
+    "s_c6b8b716f084ae": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "522e06f5-c391-47e8-8a61-a9e7ff269c45",
+        "model": "gemini-4-argon"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
