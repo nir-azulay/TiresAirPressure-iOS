@@ -1,4 +1,6 @@
 import XCTest
+import SwiftUI
+import UIKit
 @testable import TirePressureManager
 
 @MainActor
@@ -244,6 +246,19 @@ final class SettingsManagerTests: XCTestCase {
         XCTAssertFalse(manager.bundledVersion.isEmpty)
         XCTAssertEqual(manager.manifest?.requiredSettingsKeys.count, 18)
         XCTAssertFalse(manager.manifest?.staticFiles.isEmpty ?? true)
+    }
+
+    func testFontSizeScalePersistence() {
+        XCTAssertEqual(sut.fontSizeScale, .defaultSize)
+        XCTAssertEqual(sut.uiScaleFactor, 1.0)
+
+        sut.updateFontSizeScale(.smaller)
+        XCTAssertEqual(sut.fontSizeScale, .smaller)
+        XCTAssertEqual(sut.uiScaleFactor, 0.85)
+
+        sut.updateFontSizeScale(.bigger)
+        XCTAssertEqual(sut.fontSizeScale, .bigger)
+        XCTAssertEqual(sut.uiScaleFactor, 1.15)
     }
 }
 

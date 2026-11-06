@@ -203,8 +203,11 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
                 if !newVer.isEmpty {
                     self.deviceVersion = newVer
                 }
-                if let ip = settings?.ipAddress, !ip.isEmpty, self.customHostIP.isEmpty {
-                    self.customHostIP = ip
+                if let ip = settings?.ipAddress.trimmingCharacters(in: .whitespacesAndNewlines), !ip.isEmpty {
+                    let currentCustom = self.customHostIP.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if currentCustom.isEmpty || (currentCustom == "192.168.4.1" && ip != "192.168.4.1") {
+                        self.customHostIP = ip
+                    }
                 }
                 if !newVer.isEmpty && newVer != self.dismissedForDeviceVersion {
                     self.updateSuggestionDismissed = false
@@ -448,17 +451,19 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
 
     private func candidateHosts(for settings: DeviceSettings?) -> [String] {
         var hosts: [String] = []
+        let bleIP = settings?.ipAddress.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let trimmedCustom = customHostIP
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: "http://", with: "")
             .replacingOccurrences(of: "https://", with: "")
             .replacingOccurrences(of: "/", with: "")
-        if !trimmedCustom.isEmpty {
+        if !bleIP.isEmpty && bleIP != "192.168.4.1" {
+            hosts.append(bleIP)
+        }
+        if !trimmedCustom.isEmpty && !hosts.contains(trimmedCustom) {
             hosts.append(trimmedCustom)
         }
-        if let bleIP = settings?.ipAddress.trimmingCharacters(in: .whitespacesAndNewlines),
-           !bleIP.isEmpty,
-           !hosts.contains(bleIP) {
+        if !bleIP.isEmpty && !hosts.contains(bleIP) {
             hosts.append(bleIP)
         }
         if !hosts.contains("192.168.4.1") {
@@ -708,11 +713,9 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
             try? await Task.sleep(nanoseconds: 1_500_000_000)
             return true
         }
-        if let resp = try? await DirectWiFiHTTPClient.sendGET(host: host, path: "/updateSettings?SimulationMode=1", timeoutSec: 3.0),
-           (200...299).contains(resp.statusCode) {
-            try? await Task.sleep(nanoseconds: 5_500_000_000)
-            return true
-        }
+        // Do NOT call `/updateSettings?SimulationMode=1` over HTTP here because `saveSettings`
+        // triggers `scheduleRestart(1500)`, which drops the ESP32 SoftAP and causes the phone
+        // to auto-reconnect to home Wi-Fi right before the OTA upload starts!
         return false
     }
 
@@ -842,6 +845,26 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
         upgradeState = .uploadingFirmware(progress: 0.0)
         appendLog(String(format: L("upgrade_log_flashing_firmware_format", comment: ""), bundledVersion, fwData.count / 1024))
 
+        // 1. Prime lastUpdateChunkMs only on controllers running older firmware
+        // (build < 270) where loop() on Core 1 checked `millis() - lastUpdateChunkMs > 20000`
+        // before lastUpdateChunkMs was initialized on the first OTA chunk. Controllers on
+        // build >= 270 already set lastUpdateChunkMs first, and the prime upload's failed
+        // Update.end() ("Flash Read Failed") can leave the updater in a bad state.
+        let deviceBuild = Self.parseVersionComponents(deviceVersion).buildNumber
+        if deviceBuild == nil || deviceBuild! < 270 {
+            try? await uploadMultipartFile(
+                host: host,
+                endpoint: "/doUpdate",
+                fieldName: "update",
+                fileName: "prime.bin",
+                mimeType: "application/octet-stream",
+                fileData: Data([0x00]),
+                isFirmwareOTA: false,
+                onProgress: nil
+            )
+            try? await Task.sleep(nanoseconds: 250_000_000)
+        }
+
         try await uploadMultipartFile(
             host: host,
             endpoint: "/doUpdate",
@@ -886,7 +909,8 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
         }
 
         var verifiedVersion: String?
-        for _ in 0..<8 {
+        var didRestoreSim = (restoreSimulationModeTo == nil)
+        for _ in 0..<10 {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             if let httpVer = await probeSettingsValues(host: host), !httpVer.isEmpty {
                 verifiedVersion = httpVer
@@ -895,8 +919,9 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
                 evaluateUpdateAvailability()
             }
             if BLEManager.shared.connectionState == .connected {
-                if let targetSim = restoreSimulationModeTo {
+                if !didRestoreSim, let targetSim = restoreSimulationModeTo {
                     BLEManager.shared.sendSimulationMode(enabled: targetSim)
+                    didRestoreSim = true
                     try? await Task.sleep(nanoseconds: 400_000_000)
                 }
                 BLEManager.shared.requestSettings()
@@ -904,8 +929,11 @@ final class FirmwareUpgradeManager: NSObject, ObservableObject {
                 if let bleVer = BLEManager.shared.deviceSettings?.softwareVersion, !bleVer.isEmpty {
                     verifiedVersion = bleVer
                     deviceVersion = bleVer
+                    evaluateUpdateAvailability()
                 }
-                if verifiedVersion != nil {
+            }
+            if let ver = verifiedVersion {
+                if !expectBundledFirmware || !Self.isBundledVersionNewer(bundled: bundledVersion, device: ver) {
                     break
                 }
             }
@@ -1073,7 +1101,13 @@ enum DirectWiFiHTTPClient {
         var lastReportedPct = -1
 
         while offset < totalBytes {
-            let end = min(offset + chunkSize, totalBytes)
+            var end = min(offset + chunkSize, totalBytes)
+            // Avoid ending a TCP write on 0x0D ('\r') because ESPAsyncWebServer's
+            // _parseMultipartPostByte holds '\r' in state EXPECT_FEED1 without flushing
+            // _itemBuffer when `last == true`, which can overflow its 1460-byte buffer.
+            while end < totalBytes && (end - offset) > 1 && fileData[end - 1] == 0x0D {
+                end -= 1
+            }
             let slice = fileData.subdata(in: offset..<end)
             try writeAll(fd: fd, data: slice)
 
@@ -1101,7 +1135,14 @@ enum DirectWiFiHTTPClient {
         try writeAll(fd: fd, data: epilogue)
         onProgress?(1.0)
 
-        // 4. Read HTTP response from ESP32 (sent 1000ms before scheduleRestart)
+        // 4. Read HTTP response from ESP32. After a firmware upload the
+        // controller reboots as soon as it has answered and its AsyncWebServer
+        // does not promptly close the connection — cap the wait so a
+        // successful flash is not stuck here until the 90 s socket timeout.
+        if isFirmwareOTA {
+            var tv = timeval(tv_sec: 15, tv_usec: 0)
+            setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, socklen_t(MemoryLayout<timeval>.size))
+        }
         let response = try readHTTPResponse(fd: fd)
         return response.statusCode
     }
@@ -1194,6 +1235,28 @@ enum DirectWiFiHTTPClient {
         }
     }
 
+    /// True once headers are complete and the body matches Content-Length / final chunk.
+    private static func isCompleteHTTPResponse(_ data: Data) -> Bool {
+        let separator = Data([0x0D, 0x0A, 0x0D, 0x0A]) // \r\n\r\n
+        guard let range = data.range(of: separator) else { return false }
+        let headerStr = String(data: data.subdata(in: 0..<range.lowerBound), encoding: .utf8) ?? ""
+        let bodyCount = data.count - range.upperBound
+        let lines = headerStr.components(separatedBy: "\r\n")
+        if let clLine = lines.first(where: { $0.lowercased().hasPrefix("content-length:") }),
+           let contentLength = Int(clLine.drop(while: { $0 != ":" }).dropFirst().trimmingCharacters(in: .whitespaces)) {
+            return bodyCount >= contentLength
+        }
+        if lines.contains(where: { $0.lowercased().contains("transfer-encoding:") && $0.lowercased().contains("chunked") }) {
+            // Final zero-size chunk terminates with "0\r\n\r\n".
+            guard data.count >= 5 else { return false }
+            let tail = [UInt8](data.suffix(5))
+            return tail[0] == 0x30 && tail[1] == 0x0D && tail[2] == 0x0A && tail[3] == 0x0D && tail[4] == 0x0A
+        }
+        // No length information: headers plus any body bytes is all we get
+        // (the server closes per `Connection: close`).
+        return bodyCount > 0
+    }
+
     private static func readHTTPResponse(fd: Int32) throws -> HTTPResponse {
         var received = Data()
         var buffer = [UInt8](repeating: 0, count: 2048)
@@ -1201,6 +1264,9 @@ enum DirectWiFiHTTPClient {
             let n = Darwin.recv(fd, &buffer, buffer.count, 0)
             if n > 0 {
                 received.append(buffer, count: n)
+                // Return as soon as a complete response has arrived instead of
+                // waiting for the server to close the connection.
+                if isCompleteHTTPResponse(received) { break }
             } else if n == 0 {
                 break
             } else if errno == EINTR {

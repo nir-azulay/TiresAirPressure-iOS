@@ -181,6 +181,14 @@
 "language" = "שפה";
 "language_change_notice" = "שינוי השפה יגרום להפעלה מחדש של האפליקציה";
 
+/* Font Size */
+"font_size" = "גודל גופן";
+"font_size_smallest" = "הקטן ביותר";
+"font_size_smaller" = "קטן יותר";
+"font_size_default" = "ברירת מחדל";
+"font_size_bigger" = "גדול יותר";
+"font_size_biggest" = "הגדול ביותר";
+
 /* Signal Strength */
 "excellent_signal" = "אות מצוין";
 "good_signal" = "אות טוב";

@@ -10,6 +10,7 @@ class SettingsManager: ObservableObject {
     @Published var debugMode: Bool = false
     @Published var minPressureCount: Int = 1
     @Published var maxPressureCount: Int = 8
+    @Published var fontSizeScale: AppFontSize = .defaultSize
     @Published var lastConnectedDeviceId: String?
 
     private let userDefaults = UserDefaults.standard
@@ -22,8 +23,18 @@ class SettingsManager: ObservableObject {
         static let debugMode = "debugMode"
         static let minPressureCount = "minPressureCount"
         static let maxPressureCount = "maxPressureCount"
+        static let fontSizeScale = "fontSizeScale"
         static let lastConnectedDeviceId = "lastConnectedDeviceId"
         static let isFirstLaunch = "isFirstLaunch"
+    }
+
+    var uiScaleFactor: CGFloat {
+        fontSizeScale.scaleFactor
+    }
+
+    func updateFontSizeScale(_ size: AppFontSize) {
+        fontSizeScale = size
+        userDefaults.set(size.rawValue, forKey: Keys.fontSizeScale)
     }
 
     init() {
@@ -91,6 +102,7 @@ class SettingsManager: ObservableObject {
         debugMode = false
         minPressureCount = 1
         maxPressureCount = 8
+        fontSizeScale = .defaultSize
         saveAllSettings()
     }
 
@@ -187,6 +199,14 @@ class SettingsManager: ObservableObject {
         debugMode = userDefaults.bool(forKey: Keys.debugMode)
         print("[SettingsManager] Loaded debugMode: \(debugMode)")
 
+        if let sizeStr = userDefaults.string(forKey: Keys.fontSizeScale),
+           let size = AppFontSize(rawValue: sizeStr) {
+            fontSizeScale = size
+        } else {
+            fontSizeScale = .defaultSize
+            needsRepair = true
+        }
+
         lastConnectedDeviceId = userDefaults.string(forKey: Keys.lastConnectedDeviceId)
 
         // Ensure saved devices list is also validated/migrated at startup
@@ -206,6 +226,7 @@ class SettingsManager: ObservableObject {
         userDefaults.set(debugMode, forKey: Keys.debugMode)
         userDefaults.set(minPressureCount, forKey: Keys.minPressureCount)
         userDefaults.set(maxPressureCount, forKey: Keys.maxPressureCount)
+        userDefaults.set(fontSizeScale.rawValue, forKey: Keys.fontSizeScale)
         userDefaults.set(lastConnectedDeviceId, forKey: Keys.lastConnectedDeviceId)
         savePresetPressures()
     }
@@ -213,6 +234,35 @@ class SettingsManager: ObservableObject {
     private func savePresetPressures() {
         if let data = try? JSONEncoder().encode(presetPressures) {
             userDefaults.set(data, forKey: Keys.presetPressures)
+        }
+    }
+}
+
+// MARK: - App Font Size
+enum AppFontSize: String, CaseIterable {
+    case smallest = "smallest"
+    case smaller = "smaller"
+    case defaultSize = "default"
+    case bigger = "bigger"
+    case biggest = "biggest"
+
+    var displayText: String {
+        switch self {
+        case .smallest: return L("font_size_smallest", comment: "Smallest")
+        case .smaller: return L("font_size_smaller", comment: "Smaller")
+        case .defaultSize: return L("font_size_default", comment: "Default")
+        case .bigger: return L("font_size_bigger", comment: "Bigger")
+        case .biggest: return L("font_size_biggest", comment: "Biggest")
+        }
+    }
+
+    var scaleFactor: CGFloat {
+        switch self {
+        case .smallest: return 0.72
+        case .smaller: return 0.85
+        case .defaultSize: return 1.00
+        case .bigger: return 1.15
+        case .biggest: return 1.30
         }
     }
 }

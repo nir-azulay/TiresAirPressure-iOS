@@ -61,6 +61,17 @@ struct FirmwareUpgradeView: View {
                     completedSummaryAlert = summary
                 }
             }
+            .onChange(of: upgradeManager.upgradeState.isBusy) { isBusy in
+                // Keep the screen awake while flashing — display sleep
+                // mid-upload stalls the transfer (same fix as Android's
+                // FLAG_KEEP_SCREEN_ON during upgrades).
+                UIApplication.shared.isIdleTimerDisabled = isBusy
+            }
+            .onDisappear {
+                if !upgradeManager.upgradeState.isBusy {
+                    UIApplication.shared.isIdleTimerDisabled = false
+                }
+            }
             .alert(
                 L("confirm_upgrade_title", comment: "Start Controller Update?"),
                 isPresented: Binding(

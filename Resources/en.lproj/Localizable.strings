@@ -181,6 +181,14 @@
 "language" = "Language";
 "language_change_notice" = "Changing language will restart the app";
 
+/* Font Size */
+"font_size" = "Font Size";
+"font_size_smallest" = "Smallest";
+"font_size_smaller" = "Smaller";
+"font_size_default" = "Default";
+"font_size_bigger" = "Bigger";
+"font_size_biggest" = "Biggest";
+
 /* Signal Strength */
 "excellent_signal" = "Excellent signal";
 "good_signal" = "Good signal";

@@ -8,6 +8,7 @@ struct SettingsView: View {
 
     @State private var editDisplayMode: DisplayMode = .dark
     @State private var editLanguage: AppLanguage = .system
+    @State private var editFontSizeScale: AppFontSize = .defaultSize
     @State private var editDebugMode: Bool = false
     @State private var editSimulationMode: Bool = false
     @State private var editPresetPressures: [Double] = []
@@ -33,6 +34,13 @@ struct SettingsView: View {
                                selection: $editLanguage) {
                             ForEach(AppLanguage.allCases, id: \.self) { lang in
                                 Text(lang.displayText).tag(lang)
+                            }
+                        }
+
+                        Picker(L("font_size", comment: "Font Size"),
+                               selection: $editFontSizeScale) {
+                            ForEach(AppFontSize.allCases, id: \.self) { sizeOption in
+                                Text(sizeOption.displayText).tag(sizeOption)
                             }
                         }
 
@@ -123,7 +131,7 @@ struct SettingsView: View {
                         }
                     }
                 }
-                .font(.system(size: 17))
+                .font(.system(size: 17 * settingsManager.uiScaleFactor))
                 .scrollContentBackground(.hidden)
                 .background(AppColors.background)
 
@@ -202,6 +210,10 @@ struct SettingsView: View {
         }
         .onChange(of: editDisplayMode) { _ in checkForChanges() }
         .onChange(of: editLanguage) { _ in checkForChanges() }
+        .onChange(of: editFontSizeScale) { newSize in
+            settingsManager.updateFontSizeScale(newSize)
+            checkForChanges()
+        }
         .onChange(of: editDebugMode) { _ in checkForChanges() }
         .onChange(of: editSimulationMode) { _ in checkForChanges() }
         .onChange(of: editPresetPressures) { _ in checkForChanges() }
@@ -210,6 +222,7 @@ struct SettingsView: View {
     private func loadFromSettingsManager() {
         editDisplayMode = settingsManager.displayMode
         editLanguage = settingsManager.language
+        editFontSizeScale = settingsManager.fontSizeScale
         editDebugMode = settingsManager.debugMode
         editSimulationMode = bleManager.deviceSettings?.simulationMode ?? settingsManager.simulationMode
         editPresetPressures = settingsManager.presetPressures
@@ -219,6 +232,7 @@ struct SettingsView: View {
     private func checkForChanges() {
         hasUnsavedChanges = editDisplayMode != settingsManager.displayMode
             || editLanguage != settingsManager.language
+            || editFontSizeScale != settingsManager.fontSizeScale
             || editDebugMode != settingsManager.debugMode
             || editSimulationMode != settingsManager.simulationMode
             || editPresetPressures != settingsManager.presetPressures
@@ -227,6 +241,7 @@ struct SettingsView: View {
     private func saveSettings() {
         settingsManager.displayMode = editDisplayMode
         settingsManager.language = editLanguage
+        settingsManager.updateFontSizeScale(editFontSizeScale)
         settingsManager.presetPressures = editPresetPressures
 
         if editDebugMode != settingsManager.debugMode {
@@ -617,7 +632,7 @@ struct DeviceSettingsView: View {
                     }
                 }
             }
-            .font(.system(size: 17))
+            .font(.system(size: 17 * settingsManager.uiScaleFactor))
             .scrollContentBackground(.hidden)
             .background(AppColors.background)
             .navigationTitle(L("device_configuration", comment: ""))
