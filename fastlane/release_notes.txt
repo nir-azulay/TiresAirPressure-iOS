@@ -1,6 +1,6 @@
-What's New in v2.2.1 (Controller Firmware v2.2.1_280):
-• Controller firmware version is now synced to the app version (v2.2.1) and bundled in the app.
-• More reliable Wi-Fi firmware upgrades: fixed OTA upload stalls and false "upgrade succeeded" results — the app now verifies the controller actually rebooted onto the new firmware.
-• Improved BLE connection stability and complete settings transfer from the controller.
+What's New in v2.3.0 (Controller Firmware v2.3.0_283):
+• Full controller upgrade from the app: firmware, web UI files, and settings migration in one flow.
+• Controller firmware version is now synced to the app version (v2.3.0) and bundled in the app.
+• More reliable Wi-Fi firmware upgrades, with OTA race-condition fixes on the controller.
 • Adjustable app font size in Settings.
 • Bug fixes and stability improvements.
