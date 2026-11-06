@@ -1,0 +1,77 @@
+TirePressureManager.xcodeproj/project.pbxproj
+  s_c6b8b716f084ae::t_0feb6b69ee569f 590,630
+Features/Main/MainView.swift
+  s_c6b8b716f084ae::t_542d075fec21f4 148-150,163
+  s_c6b8b716f084ae::t_d7d49fd8c5bbf6 247,266,311
+  s_c6b8b716f084ae::t_2aad122b4d50c4 405-406,412,534,574,579,581,623,688,734,796
+  s_c6b8b716f084ae::t_55449077fd59a9 145-146
+  s_c6b8b716f084ae::t_4db96687ac5d69 28,36,41,52,58-59,64,67,74,80-81,84
+  s_c6b8b716f084ae::t_3e8f47e91c720b 27,53,98,101,104,255,260,264,273,282,292,321,325,331,375,388-389,395,402,409,419,421,423,436,441,462-463,470,476-477,491,500,506,511,515,540,545,549,557,567,571,576,583,592,641,645,699,703,758,768,773,811,817,821,834,836
+Tests/TirePressureManagerTests/SettingsManagerTests.swift
+  s_c6b8b716f084ae::t_8feaa8cbaf7923 250,254,258,262
+  s_c6b8b716f084ae::t_595f1af4f9d1b2 257,261
+  s_c6b8b716f084ae::t_335dd28cd7ab76 2-3
+  s_c6b8b716f084ae::t_af9808e1932f5b 251-253,255-256,259-260
+App/TirePressureManagerApp.swift
+  s_c6b8b716f084ae::t_e8750c583a5ac6 28-30
+Features/Settings/SettingsView.swift
+  s_c6b8b716f084ae::t_dd5cc0e5498fe7 11
+  s_c6b8b716f084ae::t_1495767f7ca002 213-216
+  s_c6b8b716f084ae::t_1893143df66bf4 225,235
+  s_c6b8b716f084ae::t_dddd067ca459f9 635
+  s_c6b8b716f084ae::t_e9416d652cef63 40-46
+  s_c6b8b716f084ae::t_5f449a8fdaf790 244
+  s_c6b8b716f084ae::t_34636c6529492a 134
+fastlane/release_notes.txt
+  s_c6b8b716f084ae::t_4112052b47eeb8 1
+  s_c6b8b716f084ae::t_04817fa7a3e1b9 2-6
+README.md
+  s_c6b8b716f084ae::t_158384be27a231 1
+Resources/FirmwarePackage/manifest.json
+  s_c6b8b716f084ae::t_929c3e819ea0aa 2-4,7
+Features/Settings/FirmwareUpgradeView.swift
+  s_c6b8b716f084ae::t_001c90fa7b64e2 64-74
+Resources/he.lproj/Localizable.strings
+  s_c6b8b716f084ae::t_c4db35cc334db6 184-191
+Core/Services/SettingsManager.swift
+  s_c6b8b716f084ae::t_52f3b1fb5930cc 13,26,32,35-37
+  s_c6b8b716f084ae::t_7cdf16dcb4f184 202-204,206
+  s_c6b8b716f084ae::t_c5632def737f6a 261-262,264-265
+  s_c6b8b716f084ae::t_178f63f5a4850d 31,33-34
+  s_c6b8b716f084ae::t_1633307324b649 205,207-209
+  s_c6b8b716f084ae::t_470ae3803e5d5c 229
+  s_c6b8b716f084ae::t_3d3023765c6f81 38,241-260,263,266-269
+  s_c6b8b716f084ae::t_641515f40e46d8 105
+  s_c6b8b716f084ae::t_3aba1c8f624696 39
+App/Info.plist
+  s_c6b8b716f084ae::t_0feb6b69ee569f 37,61-62,80-95
+Core/Services/FirmwareUpgradeManager.swift
+  s_c6b8b716f084ae::t_0e39203ab4d1dc 1238-1259
+  s_c6b8b716f084ae::t_10298c1332030d 454,460-463,466
+  s_c6b8b716f084ae::t_d84fd5dc392593 206-210
+  s_c6b8b716f084ae::t_0a5eaa3b8002a3 716-718
+  s_c6b8b716f084ae::t_c1f8392d07e396 912-913,922,924,932,934-936
+  s_c6b8b716f084ae::t_35df717e1d3533 867
+  s_c6b8b716f084ae::t_1de91a4dcf2bb8 1267-1269
+  s_c6b8b716f084ae::t_b880a2c2e4388c 1104-1110
+  s_c6b8b716f084ae::t_f377399bb490fa 848-866
+  s_c6b8b716f084ae::t_e584e3808c20f7 1138-1145
+Resources/en.lproj/Localizable.strings
+  s_c6b8b716f084ae::t_67f1405713f894 184-191
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "d8ed38a2744b042c35ee48b0df86ffef31f5253d",
+  "prompts": {},
+  "sessions": {
+    "s_c6b8b716f084ae": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "522e06f5-c391-47e8-8a61-a9e7ff269c45",
+        "model": "muse-wonder-1.0"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
