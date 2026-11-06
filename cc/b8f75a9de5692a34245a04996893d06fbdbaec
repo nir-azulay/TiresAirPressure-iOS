@@ -1,0 +1,27 @@
+App/Info.plist
+  s_c6b8b716f084ae::t_3d8cbbe08346ca 37
+TirePressureManager.xcodeproj/project.pbxproj
+  s_c6b8b716f084ae::t_3d8cbbe08346ca 590,630
+Resources/FirmwarePackage/manifest.json
+  s_c6b8b716f084ae::t_328c9bd1cdecd5 2-4,7
+README.md
+  s_c6b8b716f084ae::t_cf197a0a0e0c07 1
+fastlane/release_notes.txt
+  s_c6b8b716f084ae::t_bc4c8dc6c973ff 1-4
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.11",
+  "base_commit_sha": "ccb8f75a9de5692a34245a04996893d06fbdbaec",
+  "prompts": {},
+  "sessions": {
+    "s_c6b8b716f084ae": {
+      "agent_id": {
+        "tool": "cursor",
+        "id": "522e06f5-c391-47e8-8a61-a9e7ff269c45",
+        "model": "muse-wonder-1.0"
+      },
+      "human_author": "Nir Azulay <nir.azulay@gmail.com>"
+    }
+  }
+}
